@@ -1,0 +1,170 @@
+{
+	"info": {
+		"_postman_id": "6eb51cc2-fc51-4fd4-8273-8574b46f1362",
+		"name": "KopytkaNow - 1",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "5840429"
+	},
+	"item": [
+		{
+			"name": "Order Service - Create Order",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var responseHeader = pm.response.headers.get('Location');",
+							"if (responseHeader) {",
+							"    var orderId = responseHeader.split('/').pop();",
+							"    pm.collectionVariables.set(\"orderId\", orderId);",
+							"}",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"customerId\": \"{{customerId}}\",\n    \"address\": {\n        \"street\": \"Krakowska\",\n        \"postCode\": \"30-001\",\n        \"city\": \"Kraków\",\n        \"houseNo\": \"15/4\"\n    },\n    \"price\": 50.70,\n    \"basketItems\": [\n        {\n            \"productId\": \"660e8400-e29b-41d4-a716-446655440001\",\n            \"price\": 15.90,\n            \"quantity\": 2,\n            \"totalPrice\": 31.80\n        },\n        {\n            \"productId\": \"770e8400-e29b-41d4-a716-446655440002\",\n            \"price\": 18.90,\n            \"quantity\": 1,\n            \"totalPrice\": 18.90\n        }\n    ]\n}"
+				},
+				"url": {
+					"raw": "{{order_service_url}}/api/orders",
+					"host": [
+						"{{order_service_url}}"
+					],
+					"path": [
+						"api",
+						"orders"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Customer Service - Create Customer",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"var responseHeader = pm.response.headers.get('Location');",
+							"if (responseHeader) {",
+							"    var customerId = responseHeader.split('/').pop();",
+							"    pm.collectionVariables.set(\"customerId\", customerId);",
+							"}"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"firstName\": \"Ferdynand\",\n  \"lastName\": \"Kiepski\",\n  \"email\": \"ferdynand.kiepski@example.com\"\n}"
+				},
+				"url": {
+					"raw": "{{order_service_url}}/api/customers",
+					"host": [
+						"{{order_service_url}}"
+					],
+					"path": [
+						"api",
+						"customers"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Customer Service - Get Customer",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{order_service_url}}/api/customers/{{customerId}}",
+					"host": [
+						"{{order_service_url}}"
+					],
+					"path": [
+						"api",
+						"customers",
+						"{{customerId}}"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Order Service - Get Order",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{order_service_url}}/api/orders/{{orderId}}",
+					"host": [
+						"{{order_service_url}}"
+					],
+					"path": [
+						"api",
+						"orders",
+						"{{orderId}}"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "order_service_url",
+			"value": "http://localhost:8580",
+			"type": "string"
+		},
+		{
+			"key": "customerId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "orderId",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
