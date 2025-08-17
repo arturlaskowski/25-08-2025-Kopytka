@@ -1,17 +1,9 @@
 spring:
   application:
-    name: payment-service
-  jpa:
-    hibernate:
-      ddl-auto: update
-  #  show-sql: true
-    open-in-view: false
-    properties:
-      hibernate:
-        "[format_sql]": true
+    name: "gateway"
 
 server:
-  port: 8582
+  port: 9000
 
 eureka:
   instance:
@@ -21,3 +13,4 @@ eureka:
     registerWithEureka: true  # Rejestruje tę usługę w serwerze Eureka, aby inne serwisy mogły ją odnaleźć
     serviceUrl:
       defaultZone: http://localhost:8070/eureka/  # Adres URL serwera Eureka, do którego usługa się rejestruje i z którego pobiera informacje o innych usługach
+

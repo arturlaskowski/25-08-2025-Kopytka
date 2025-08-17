@@ -7,3 +7,7 @@ spring:
     properties:
       hibernate:
         "[format_sql]": true
+
+eureka:
+  client:
+    enabled: false
