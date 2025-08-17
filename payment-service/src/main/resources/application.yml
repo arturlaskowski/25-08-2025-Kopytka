@@ -10,6 +10,13 @@ spring:
       hibernate:
         "[format_sql]": true
 
+payment-service:
+  reprocess-payments:
+    interval-in-seconds: 300  # Run every 5 minutes
+    reprocess-scheduler:
+      lock-at-most-for: 10m     # Maximum lock duration
+      lock-at-least-for: 4m     # Minimum lock duration
+
 server:
   port: 8582
 

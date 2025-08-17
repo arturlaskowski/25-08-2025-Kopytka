@@ -12,4 +12,8 @@ eureka:
   client:
     enabled: false
 
+kopytka:
+  scheduling:
+    enabled: false
+
 

@@ -2,6 +2,8 @@ package pl.kopytka.payment.application;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,13 +20,22 @@ import java.util.concurrent.TimeUnit;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@ConditionalOnProperty(name = "kopytka.scheduling.enabled", havingValue = "true", matchIfMissing = true)
 public class PaymentReprocessorService {
 
     private final PaymentRepository paymentRepository;
     private final WalletRepository walletRepository;
     private final PaymentDomainService paymentDomainService;
 
-    @Scheduled(fixedDelayString = "${payment.reprocess.interval-in-seconds:30}", timeUnit = TimeUnit.SECONDS)
+    // Ten scheduler i tak jest do usunięcia, bo w tym momencie, nawet gdyby udało się ponownie
+    // przeprocesować płatność, to order-service by się o tym nie dowiedział i status zamówienia by się nie zmienił.
+    // Więc to tylko pokaz, jak użyć ShedLocka (ta wiedza przyda nam się później :) )
+    @Scheduled(fixedDelayString = "${payment-service.reprocess-payments.interval-in-seconds}", timeUnit = TimeUnit.SECONDS)
+    @SchedulerLock(
+            name = "reprocessRejectedPayments",
+            lockAtMostFor = "${payment-service.reprocess-payments.reprocess-scheduler.lock-at-most-for}",
+            lockAtLeastFor = "${payment-service.reprocess-payments.reprocess-scheduler.lock-at-least-for}"
+    )
     @Transactional
     public void reprocessRejectedPayments() {
         log.info("Starting scheduled reprocessing of rejected payments at {}", Instant.now());

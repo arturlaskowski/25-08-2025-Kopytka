@@ -15,7 +15,8 @@ public class TestApplicationContextInitializer implements ApplicationContextInit
         TestPropertySourceUtils.addInlinedPropertiesToEnvironment(
                 applicationContext,
                 "spring.profiles.active=test",
-                "eureka.client.enabled=false"
+                "eureka.client.enabled=false",
+                "kopytka.scheduling.enabled=false"
         );
     }
 }

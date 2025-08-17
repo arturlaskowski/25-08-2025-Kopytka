@@ -11,7 +11,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
 @Import({
-        FeignConfig.class
+        FeignConfig.class,
+        SchedulingConfig.class
 })
 @ComponentScan(basePackages = "pl.kopytka")
 public @interface EnableKopytkaCommon {
