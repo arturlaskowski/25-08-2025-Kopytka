@@ -14,6 +14,7 @@ interface OrderMapper {
 
     @Mapping(target = "id", source = "id.orderId")
     @Mapping(target = "customerId", source = "customerId.customerId")
+    @Mapping(target = "restaurantId", source = "restaurantId.restaurantId")
     @Mapping(target = "price", source = "price.amount")
     @Mapping(target = "basketItems", source = "basket")
     OrderQuery toProjection(Order order);

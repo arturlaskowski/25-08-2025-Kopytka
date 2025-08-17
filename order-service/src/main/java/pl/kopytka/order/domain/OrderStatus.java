@@ -4,5 +4,6 @@ public enum OrderStatus {
     PENDING,
     PAID,
     APPROVED,
-    FAILED
+    CANCELLING,
+    CANCELLED
 }

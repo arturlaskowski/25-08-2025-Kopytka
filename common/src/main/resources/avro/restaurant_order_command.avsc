@@ -1,0 +1,81 @@
+{
+  "namespace": "pl.kopytka.avro.restaurant",
+  "type": "record",
+  "name": "RestaurantOrderCommandAvroModel",
+  "fields": [
+    {
+      "name": "type",
+      "type": {
+        "type": "enum",
+        "name": "RestaurantCommandType",
+        "symbols": [
+          "APPROVE_ORDER"
+        ]
+      }
+    },
+    {
+      "name": "payload",
+      "type": [
+        {
+          "name": "RestaurantApproveOrderAvroCommand",
+          "type": "record",
+          "fields": [
+            {
+              "name": "restaurantId",
+              "type": {
+                "type": "string",
+                "logicalType": "uuid"
+              }
+            },
+            {
+              "name": "orderId",
+              "type": {
+                "type": "string",
+                "logicalType": "uuid"
+              }
+            },
+            {
+              "name": "products",
+              "type": {
+                "type": "array",
+                "items": {
+                  "name": "Product",
+                  "type": "record",
+                  "fields": [
+                    {
+                      "name": "id",
+                      "type": {
+                        "type": "string",
+                        "logicalType": "uuid"
+                      }
+                    },
+                    {
+                      "name": "quantity",
+                      "type": "int"
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "name": "price",
+              "type": {
+                "type": "bytes",
+                "logicalType": "decimal",
+                "precision": 10,
+                "scale": 2
+              }
+            },
+            {
+              "name": "createdAt",
+              "type": {
+                "type": "long",
+                "logicalType": "timestamp-millis"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -7,6 +7,6 @@ import org.springframework.context.annotation.Configuration;
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "customer-service.kafka.topics")
-public class TopicsConfigData {
+class TopicsConfigData {
     private String customerEvent;
 }

@@ -10,14 +10,13 @@ import pl.kopytka.common.web.ErrorResponse;
 import pl.kopytka.common.web.GlobalExceptionHandler;
 import pl.kopytka.payment.application.exception.PaymentAlreadyExistsException;
 import pl.kopytka.payment.application.exception.PaymentNotFoundException;
-import pl.kopytka.payment.application.exception.WalletAlreadyExistsException;
 import pl.kopytka.payment.application.exception.WalletNotFoundException;
 import pl.kopytka.payment.domain.PaymentDomainException;
 
 @RestControllerAdvice
 @Slf4j
 @SuppressWarnings("JvmTaintAnalysis")
-public class PaymentExceptionHandler extends GlobalExceptionHandler {
+class PaymentExceptionHandler extends GlobalExceptionHandler {
 
     @ExceptionHandler(PaymentDomainException.class)
     public ResponseEntity<ErrorResponse> handlePaymentDomainException(PaymentDomainException ex, HttpServletRequest request) {
@@ -53,14 +52,5 @@ public class PaymentExceptionHandler extends GlobalExceptionHandler {
                 request.getRequestURI()
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
-    }
-
-    @ExceptionHandler(WalletAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponse> handlePaymentDomainException(WalletAlreadyExistsException ex, HttpServletRequest request) {
-        ErrorResponse errorResponse = new ErrorResponse(
-                ex.getMessage(),
-                request.getRequestURI()
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 }

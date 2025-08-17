@@ -30,6 +30,7 @@ payment-service:
     topics:
       customer-event: customer-events
       payment-command: payment-commands
+      payment-event: payment-events
 
 kafka-config:
   bootstrap-servers: localhost:9092

@@ -5,6 +5,6 @@ import pl.kopytka.common.domain.valueobject.CustomerId;
 public class WalletAlreadyExistsException extends RuntimeException {
 
     public WalletAlreadyExistsException(CustomerId customerId) {
-        super("Wallet for customer " + customerId + " already exists.");
+        super("Wallet already exists for customer: " + customerId.id());
     }
 }

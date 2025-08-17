@@ -10,6 +10,8 @@ import org.springframework.kafka.config.KafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
+import org.springframework.kafka.listener.DefaultErrorHandler;
+import org.springframework.util.backoff.FixedBackOff;
 import pl.kopytka.common.kafka.KafkaConfigData;
 
 import java.io.Serializable;
@@ -56,10 +58,36 @@ public class KafkaConsumerConfig<K extends Serializable, V extends SpecificRecor
     public KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<K, V>> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<K, V> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
+        factory.setCommonErrorHandler(errorHandler());
+
         factory.setBatchListener(kafkaConsumerConfigData.getBatchListener());
         factory.setConcurrency(kafkaConsumerConfigData.getConcurrencyLevel());
         factory.setAutoStartup(kafkaConsumerConfigData.getAutoStartup());
         factory.getContainerProperties().setPollTimeout(kafkaConsumerConfigData.getPollTimeoutMs());
         return factory;
+    }
+/**
+     * Wyłączenie retry:
+     * <p>
+     * Domyślnie Spring Kafka wykonuje 10 prób ponownego przetworzenia wiadomości, jeśli podczas przetwarzania wystąpi wyjątek.
+     * Na przykład, jeśli pojawi się wyjątek LoyaltyAccountNotExists, wiadomość zostanie przetworzona aż 10 razy.
+     * <p>
+     * Zazwyczaj konfigurujemy, które wyjątki powinny być retriowane, a które nie, definiujemy strategię backoff
+     * (czyli opóźnienie między próbami) lub przekierowujemy wiadomość na Dead Letter Topic (DLT).
+     * To zależy od konfiguracji listenera Kafka w projekcie.
+     * <p>
+     * Przykład: Można stworzyć abstrakcyjny wyjątek i oznaczyć go jako nieretriowalny:
+     * <pre>
+     * errorHandler.addNotRetryableExceptions(NonRetryableException.class);
+     * </pre>
+     * Wszystkie wyjątki, które nie powinny być ponownie przetwarzane, mogą dziedziczyć po NonRetryableException.
+     */
+   @Bean
+    public DefaultErrorHandler errorHandler() {
+       return new DefaultErrorHandler(
+               (consumerRecord, exception) -> {
+                   // Obsługa błędu (np. logowanie)
+               },
+               new FixedBackOff(0L, 0));
     }
 }

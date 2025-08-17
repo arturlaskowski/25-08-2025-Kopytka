@@ -24,7 +24,7 @@ class OrderController {
     private final OrderApplicationService orderApplicationService;
 
     @PostMapping
-    public ResponseEntity<Void> createOrder(@Valid @RequestBody CreateOrderRequest request) {
+    public ResponseEntity<Void> processOrder(@Valid @RequestBody CreateOrderRequest request) {
         CreateOrderCommand command = mapToCommand(request);
         OrderId orderId = orderApplicationService.createOrder(command);
 
@@ -42,21 +42,10 @@ class OrderController {
         return ResponseEntity.ok(order);
     }
 
-    @PostMapping("/{orderId}/pay")
-    public ResponseEntity<Void> payOrder(@PathVariable UUID orderId) {
-        orderApplicationService.payOrder(new OrderId(orderId));
-        return ResponseEntity.noContent().build();
-    }
-
-    @PostMapping("/{orderId}/approve")
-    public ResponseEntity<Void> approveOrder(@PathVariable UUID orderId) {
-        orderApplicationService.approveOrder(new OrderId(orderId));
-        return ResponseEntity.noContent().build();
-    }
-
     private CreateOrderCommand mapToCommand(CreateOrderRequest request) {
         return new CreateOrderCommand(
                 request.customerId(),
+                request.restaurantId(),
                 new CreateOrderAddressDto(
                         request.deliveryAddress().street(),
                         request.deliveryAddress().postCode(),

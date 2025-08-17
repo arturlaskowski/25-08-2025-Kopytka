@@ -18,7 +18,7 @@ public class WalletService {
     private final WalletRepository walletRepository;
 
     @Transactional
-    public WalletId createWallet(CustomerId customerId, Money initialAmount) {
+    public void createWallet(CustomerId customerId, Money initialAmount) {
         walletRepository.findByCustomerId(customerId).ifPresent(wallet -> {
             throw new WalletAlreadyExistsException(customerId);
         });
@@ -26,8 +26,7 @@ public class WalletService {
         WalletId walletId = WalletId.newOne();
         Wallet wallet = new Wallet(walletId, customerId, initialAmount);
 
-        Wallet savedWallet = walletRepository.save(wallet);
-        return savedWallet.getId();
+       walletRepository.save(wallet);
     }
 
     @Transactional

@@ -5,7 +5,10 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import pl.kopytka.common.domain.valueobject.*;
+import pl.kopytka.common.domain.valueobject.CustomerId;
+import pl.kopytka.common.domain.valueobject.Money;
+import pl.kopytka.common.domain.valueobject.OrderId;
+import pl.kopytka.common.domain.valueobject.RestaurantId;
 
 import java.time.Instant;
 import java.util.HashSet;
@@ -20,6 +23,8 @@ public class Order {
     private OrderId id;
 
     private CustomerId customerId;
+
+    private RestaurantId restaurantId;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "delivery_address_id", referencedColumnName = "id")
@@ -45,8 +50,9 @@ public class Order {
     @Version
     private int version;
 
-    public Order(CustomerId customerId, OrderAddress deliveryAddress, Money price, Set<OrderItem> basketItems) {
+    public Order(CustomerId customerId, RestaurantId restaurantId, OrderAddress deliveryAddress, Money price, Set<OrderItem> basketItems) {
         this.id = OrderId.newOne();
+        this.restaurantId = restaurantId;
         this.customerId = customerId;
         this.deliveryAddress = deliveryAddress;
         this.price = price;
@@ -69,7 +75,7 @@ public class Order {
     private void validateBasketItemsPrice(Set<OrderItem> basketItems) {
         basketItems.forEach(item -> {
             if (!item.isValidPrice()) {
-                throw new OrderDomainException("Incorrect basket item price");
+                throw new OrderDomainException("Total price should be equal to price multiplied by quantity");
             }
         });
     }
@@ -98,25 +104,33 @@ public class Order {
     }
 
     public void pay() {
-        if (!isPendingStatus()) {
+        if (this.status != OrderStatus.PENDING) {
             throw new OrderDomainException("The payment operation cannot be performed. Order is in incorrect state");
         }
         this.status = OrderStatus.PAID;
     }
 
-    public void fail(String failureMessage) {
-        if (!isPendingStatus()) {
-            throw new OrderDomainException("The fail operation cannot be performed. Order is in incorrect state");
-        }
-        this.status = OrderStatus.FAILED;
-        updateFailureMessages(failureMessage);
-    }
-
     public void approve() {
-        if (!isPaidStatus()) {
+        if (this.status != OrderStatus.PAID) {
             throw new OrderDomainException("The approve operation cannot be performed. Order is in incorrect state");
         }
         this.status = OrderStatus.APPROVED;
+    }
+
+    public void initCancel(String failureMessages) {
+        if (this.status != OrderStatus.PAID) {
+            throw new OrderDomainException("Order must be in PAID status to be initiated for cancellation");
+        }
+        this.status = OrderStatus.CANCELLING;
+        updateFailureMessages(failureMessages);
+    }
+
+    public void cancel(String failureMessages) {
+        if (!(this.status == OrderStatus.CANCELLING || this.status == OrderStatus.PENDING)) {
+            throw new OrderDomainException("Order must be in CANCELLING or PENDING status to be cancelled");
+        }
+        this.status = OrderStatus.CANCELLED;
+        updateFailureMessages(failureMessages);
     }
 
     public boolean isPendingStatus() {

@@ -12,6 +12,7 @@
         <module>order-service</module>
         <module>payment-service</module>
         <module>customer-service</module>
+        <module>restaurant-service</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -36,6 +37,7 @@
         <embedded-postgres.version>2.0.7</embedded-postgres.version>
         <embedded-database-spring-test.version>2.6.0</embedded-database-spring-test.version>
         <commons-io.version>2.19.0</commons-io.version>
+        <archunit-junit5.version>1.3.0</archunit-junit5.version>
     </properties>
 
     <dependencies>

@@ -1,0 +1,481 @@
+{
+	"info": {
+		"_postman_id": "be71905c-838d-48f8-9921-055da1f1807d",
+		"name": "KopytkaNow - saga",
+		"description": "Postman collection for all endpoints in the KopytkaNow microservices application with Polish meals examples.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "5840429"
+	},
+	"item": [
+		{
+			"name": "customer",
+			"item": [
+				{
+					"name": "Customer Service - Create Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var responseHeader = pm.response.headers.get('Location');",
+									"if (responseHeader) {",
+									"    var customerId = responseHeader.split('/').pop();",
+									"    pm.collectionVariables.set(\"customerId\", customerId);",
+									"}",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Ferdynand\",\n  \"lastName\": \"Kiepski\",\n  \"email\": \"ferdynand.kiepski@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{customer_service_url}}/api/customers",
+							"host": [
+								"{{customer_service_url}}"
+							],
+							"path": [
+								"api",
+								"customers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Customer Service - Get Customer",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{customer_service_url}}/api/customers/{{customerId}}",
+							"host": [
+								"{{customer_service_url}}"
+							],
+							"path": [
+								"api",
+								"customers",
+								"{{customerId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "order",
+			"item": [
+				{
+					"name": "Order Service - Create Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var responseHeader = pm.response.headers.get('Location');",
+									"if (responseHeader) {",
+									"    var orderId = responseHeader.split('/').pop();",
+									"    pm.collectionVariables.set(\"orderId\", orderId);",
+									"}",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customerId\": \"{{customerId}}\",\n    \"restaurantId\": \"{{restaurantId}}\",\n    \"deliveryAddress\": {\n        \"street\": \"Krakowska\",\n        \"postCode\": \"30-001\",\n        \"city\": \"Kraków\",\n        \"houseNo\": \"15/4\"\n    },\n    \"price\": 89.50,\n    \"basketItems\": [\n        {\n            \"productId\": \"{{productId1}}\",\n            \"price\": 25.50,\n            \"quantity\": 2,\n            \"totalPrice\": 51.00\n        },\n        {\n            \"productId\": \"{{productId2}}\",\n            \"price\": 38.50,\n            \"quantity\": 1,\n            \"totalPrice\": 38.50\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{order_service_url}}/api/orders",
+							"host": [
+								"{{order_service_url}}"
+							],
+							"path": [
+								"api",
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Order Service - Create Order - default",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var responseHeader = pm.response.headers.get('Location');",
+									"if (responseHeader) {",
+									"    var orderId = responseHeader.split('/').pop();",
+									"    pm.collectionVariables.set(\"orderId\", orderId);",
+									"}",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customerId\": \"{{customerId}}\",\n    \"restaurantId\": \"550e8400-e29b-41d4-a716-446655440000\",\n    \"deliveryAddress\": {\n        \"street\": \"Krakowska\",\n        \"postCode\": \"30-001\",\n        \"city\": \"Kraków\",\n        \"houseNo\": \"15/4\"\n    },\n    \"price\": 50.70,\n    \"basketItems\": [\n        {\n            \"productId\": \"660e8400-e29b-41d4-a716-446655440001\",\n            \"price\": 15.90,\n            \"quantity\": 2,\n            \"totalPrice\": 31.80\n        },\n        {\n            \"productId\": \"770e8400-e29b-41d4-a716-446655440002\",\n            \"price\": 18.90,\n            \"quantity\": 1,\n            \"totalPrice\": 18.90\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{order_service_url}}/api/orders",
+							"host": [
+								"{{order_service_url}}"
+							],
+							"path": [
+								"api",
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Order Service - Get Order",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{order_service_url}}/api/orders/{{orderId}}",
+							"host": [
+								"{{order_service_url}}"
+							],
+							"path": [
+								"api",
+								"orders",
+								"{{orderId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "payment",
+			"item": [
+				{
+					"name": "Payment Service - Add Funds to Wallet",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 100.00\n}"
+						},
+						"url": {
+							"raw": "{{payment_service_url}}/api/wallets/:walletId/funds",
+							"host": [
+								"{{payment_service_url}}"
+							],
+							"path": [
+								"api",
+								"wallets",
+								":walletId",
+								"funds"
+							],
+							"variable": [
+								{
+									"key": "walletId",
+									"value": "{{walletId}}"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Payment Service - Get Wallet",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{payment_service_url}}/api/wallets/{{walletId}}",
+							"host": [
+								"{{payment_service_url}}"
+							],
+							"path": [
+								"api",
+								"wallets",
+								"{{walletId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Payment Service - Get Wallet by Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"let response = pm.response.json();",
+									"let walletId = response.id;  ",
+									"pm.collectionVariables.set(\"walletId\", walletId);",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{payment_service_url}}/api/wallets/customer/{{customerId}}",
+							"host": [
+								"{{payment_service_url}}"
+							],
+							"path": [
+								"api",
+								"wallets",
+								"customer",
+								"{{customerId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "restaurant",
+			"item": [
+				{
+					"name": "Restaurant Service - Create Restaurant",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var responseHeader = pm.response.headers.get('Location');",
+									"if (responseHeader) {",
+									"    var restaurantId = responseHeader.split('/').pop();",
+									"    pm.collectionVariables.set(\"restaurantId\", restaurantId);",
+									"}",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Polska Chata\"\n}"
+						},
+						"url": {
+							"raw": "{{restaurant_service_url}}/api/restaurants",
+							"host": [
+								"{{restaurant_service_url}}"
+							],
+							"path": [
+								"api",
+								"restaurants"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Restaurant Service - Get Restaurant",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{restaurant_service_url}}/api/restaurants/{{restaurantId}}",
+							"host": [
+								"{{restaurant_service_url}}"
+							],
+							"path": [
+								"api",
+								"restaurants",
+								"{{restaurantId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Restaurant Service - Get All Restaurants",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{restaurant_service_url}}/api/restaurants",
+							"host": [
+								"{{restaurant_service_url}}"
+							],
+							"path": [
+								"api",
+								"restaurants"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Restaurant Service - Add Product",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productName\": \"Pierogi ruskie\",\n  \"price\": 25.50\n}"
+						},
+						"url": {
+							"raw": "{{restaurant_service_url}}/api/restaurants/{{restaurantId}}/products",
+							"host": [
+								"{{restaurant_service_url}}"
+							],
+							"path": [
+								"api",
+								"restaurants",
+								"{{restaurantId}}",
+								"products"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Restaurant Service - Activate Restaurant",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{restaurant_service_url}}/api/restaurants/{{restaurantId}}/activate",
+							"host": [
+								"{{restaurant_service_url}}"
+							],
+							"path": [
+								"api",
+								"restaurants",
+								"{{restaurantId}}",
+								"activate"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Restaurant Service - Deactivate Restaurant",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{restaurant_service_url}}/api/restaurants/{{restaurantId}}/deactivate",
+							"host": [
+								"{{restaurant_service_url}}"
+							],
+							"path": [
+								"api",
+								"restaurants",
+								"{{restaurantId}}",
+								"deactivate"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "customer_service_url",
+			"value": "http://localhost:8581"
+		},
+		{
+			"key": "order_service_url",
+			"value": "http://localhost:8580"
+		},
+		{
+			"key": "payment_service_url",
+			"value": "http://localhost:8582"
+		},
+		{
+			"key": "restaurant_service_url",
+			"value": "http://localhost:8583"
+		},
+		{
+			"key": "customerId",
+			"value": "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+		},
+		{
+			"key": "orderId",
+			"value": "4fa85f64-5717-4562-b3fc-2c963f66afa7"
+		},
+		{
+			"key": "paymentId",
+			"value": "5fa85f64-5717-4562-b3fc-2c963f66afa8"
+		},
+		{
+			"key": "walletId",
+			"value": "6fa85f64-5717-4562-b3fc-2c963f66afa9"
+		},
+		{
+			"key": "productId1",
+			"value": "7fa85f64-5717-4562-b3fc-2c963f66afaa"
+		},
+		{
+			"key": "productId2",
+			"value": "8fa85f64-5717-4562-b3fc-2c963f66afab"
+		},
+		{
+			"key": "restaurantId",
+			"value": "9fa85f64-5717-4562-b3fc-2c963f66afac"
+		}
+	]
+}

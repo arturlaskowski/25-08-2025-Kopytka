@@ -12,7 +12,7 @@ import pl.kopytka.common.KafkaIntegrationTest;
 import pl.kopytka.common.web.ErrorResponse;
 import pl.kopytka.customer.application.CustomerService;
 import pl.kopytka.customer.application.dto.CustomerDto;
-import pl.kopytka.customer.application.dto.CreateCustomerDto;
+import pl.kopytka.customer.web.dto.CreateCustomerDto;
 
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;

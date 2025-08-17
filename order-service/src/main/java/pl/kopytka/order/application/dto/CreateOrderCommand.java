@@ -11,6 +11,7 @@ import java.util.UUID;
 
 public record CreateOrderCommand(
     @NotNull UUID customerId,
+    @NotNull UUID restaurantId,
     @NotNull @Valid CreateOrderAddressDto deliveryAddress,
     @NotNull @Positive BigDecimal price,
     @NotNull @NotEmpty List<@Valid CreateBasketItemDto> basketItems

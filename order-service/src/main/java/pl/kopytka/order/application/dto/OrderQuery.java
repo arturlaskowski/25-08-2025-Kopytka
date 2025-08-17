@@ -11,6 +11,7 @@ import java.util.UUID;
 public record OrderQuery(
     UUID id,
     UUID customerId,
+    UUID restaurantId,
     BigDecimal price,
     OrderStatus status,
     Instant creationDate,

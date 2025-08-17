@@ -1,0 +1,139 @@
+{
+  "namespace": "pl.kopytka.avro.payment",
+  "type": "record",
+  "name": "PaymentEventAvroModel",
+  "fields": [
+    {
+      "name": "type",
+      "type": {
+        "type": "enum",
+        "name": "PaymentEventType",
+        "symbols": [
+          "PAYMENT_COMPLETED",
+          "PAYMENT_CANCELLED",
+          "PAYMENT_FAILED"
+        ]
+      }
+    },
+    {
+      "name": "payload",
+      "type": [
+        {
+          "name": "PaymentCompletedAvroEvent",
+          "type": "record",
+          "fields": [
+            {
+              "name": "paymentId",
+              "type": {
+                "type": "string",
+                "logicalType": "uuid"
+              }
+            },
+            {
+              "name": "customerId",
+              "type": {
+                "type": "string",
+                "logicalType": "uuid"
+              }
+            },
+            {
+              "name": "orderId",
+              "type": {
+                "type": "string",
+                "logicalType": "uuid"
+              }
+            },
+            {
+              "name": "price",
+              "type": {
+                "type": "bytes",
+                "logicalType": "decimal",
+                "precision": 10,
+                "scale": 2
+              }
+            },
+            {
+              "name": "createdAt",
+              "type": {
+                "type": "long",
+                "logicalType": "timestamp-millis"
+              }
+            }
+          ]
+        },
+        {
+          "name": "PaymentCancelledAvroEvent",
+          "type": "record",
+          "fields": [
+            {
+              "name": "paymentId",
+              "type": {
+                "type": "string",
+                "logicalType": "uuid"
+              }
+            },
+            {
+              "name": "customerId",
+              "type": {
+                "type": "string",
+                "logicalType": "uuid"
+              }
+            },
+            {
+              "name": "orderId",
+              "type": {
+                "type": "string",
+                "logicalType": "uuid"
+              }
+            },
+            {
+              "name": "createdAt",
+              "type": {
+                "type": "long",
+                "logicalType": "timestamp-millis"
+              }
+            }
+          ]
+        },
+        {
+          "name": "PaymentFailedAvroEvent",
+          "type": "record",
+          "fields": [
+            {
+              "name": "paymentId",
+              "type": {
+                "type": "string",
+                "logicalType": "uuid"
+              }
+            },
+            {
+              "name": "customerId",
+              "type": {
+                "type": "string",
+                "logicalType": "uuid"
+              }
+            },
+            {
+              "name": "orderId",
+              "type": {
+                "type": "string",
+                "logicalType": "uuid"
+              }
+            },
+            {
+              "name": "createdAt",
+              "type": {
+                "type": "long",
+                "logicalType": "timestamp-millis"
+              }
+            },
+            {
+              "name": "failureMessages",
+              "type": "string"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

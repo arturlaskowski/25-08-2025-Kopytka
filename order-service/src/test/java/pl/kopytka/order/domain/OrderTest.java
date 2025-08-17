@@ -3,10 +3,7 @@ package pl.kopytka.order.domain;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import pl.kopytka.common.domain.valueobject.CustomerId;
-import pl.kopytka.common.domain.valueobject.Money;
-import pl.kopytka.common.domain.valueobject.ProductId;
-import pl.kopytka.common.domain.valueobject.Quantity;
+import pl.kopytka.common.domain.valueobject.*;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -33,7 +30,8 @@ class OrderTest {
         @DisplayName("Should create order with valid details")
         void shouldCreateOrderWithValidDetails() {
             //given
-            CustomerId customerId = new CustomerId(UUID.randomUUID());
+            CustomerId customerId = CustomerId.newOne();
+            RestaurantId restaurantId = RestaurantId.newOne();
             OrderAddress deliveryAddress = new OrderAddress("Main Street", "12-345", "New York", "10A");
 
             Set<OrderItem> basketItems = createValidBasketItems();
@@ -42,7 +40,7 @@ class OrderTest {
             Instant beforeCreation = Instant.now();
 
             //when
-            Order order = new Order(customerId, deliveryAddress, totalPrice, basketItems);
+            Order order = new Order(customerId, restaurantId, deliveryAddress, totalPrice, basketItems);
 
             Instant afterCreation = Instant.now();
 
@@ -62,14 +60,15 @@ class OrderTest {
         @Test
         void shouldThrowExceptionWhenPriceIsNotPositive() {
             //given
-            CustomerId customerId = new CustomerId(UUID.randomUUID());
+            CustomerId customerId = CustomerId.newOne();
+            RestaurantId restaurantId = RestaurantId.newOne();
             OrderAddress deliveryAddress = new OrderAddress("Main Street", "12-345", "New York", "10A");
 
             Set<OrderItem> basketItems = createValidBasketItems();
             Money zeroPrice = new Money(BigDecimal.ZERO);
 
             //expected
-            assertThatThrownBy(() -> new Order(customerId, deliveryAddress, zeroPrice, basketItems))
+            assertThatThrownBy(() -> new Order(customerId, restaurantId, deliveryAddress, zeroPrice, basketItems))
                     .isInstanceOf(OrderDomainException.class)
                     .hasMessageContaining(EXPECTED_PRICE_ERROR_MESSAGE);
         }
@@ -77,14 +76,15 @@ class OrderTest {
         @Test
         void shouldThrowExceptionWhenTotalPriceDoesNotMatchBasketItemsTotal() {
             //given
-            CustomerId customerId = new CustomerId(UUID.randomUUID());
+            CustomerId customerId = CustomerId.newOne();
+            RestaurantId restaurantId = RestaurantId.newOne();
             OrderAddress deliveryAddress = new OrderAddress("Main Street", "12-345", "New York", "10A");
 
             Set<OrderItem> basketItems = createValidBasketItems();
             Money incorrectTotalPrice = new Money(new BigDecimal("100.00")); // Correct price is 65.50
 
             //expected
-            assertThatThrownBy(() -> new Order(customerId, deliveryAddress, incorrectTotalPrice, basketItems))
+            assertThatThrownBy(() -> new Order(customerId, restaurantId, deliveryAddress, incorrectTotalPrice, basketItems))
                     .isInstanceOf(OrderDomainException.class)
                     .hasMessageContaining(EXPECTED_TOTAL_PRICE_MISMATCH_ERROR);
         }
@@ -94,6 +94,7 @@ class OrderTest {
             //expected
             assertThatThrownBy(() -> {
                 // First item - valid
+                RestaurantId restaurantId = RestaurantId.newOne();
                 ProductId productId1 = new ProductId(UUID.randomUUID());
                 Money price1 = new Money(new BigDecimal("15.00"));
                 Quantity quantity1 = new Quantity(2);
@@ -113,7 +114,7 @@ class OrderTest {
                 OrderAddress deliveryAddress = new OrderAddress("Main Street", "12-345", "New York", "10A");
                 Money totalPrice = new Money(new BigDecimal("50.00"));
 
-                new Order(customerId, deliveryAddress, totalPrice, basketItems);
+                new Order(customerId, restaurantId, deliveryAddress, totalPrice, basketItems);
             })
                     .isInstanceOf(OrderDomainException.class)
                     .hasMessageContaining("Total price should be equal to price multiplied by quantity");
@@ -267,12 +268,13 @@ class OrderTest {
     }
 
     private Order createValidOrder() {
-        CustomerId customerId = new CustomerId(UUID.randomUUID());
+        RestaurantId restaurantId = RestaurantId.newOne();
+        CustomerId customerId = CustomerId.newOne();
         OrderAddress deliveryAddress = new OrderAddress("Main Street", "12-345", "New York", "10A");
 
         Set<OrderItem> basketItems = createValidBasketItems();
         Money totalPrice = new Money(VALID_TOTAL_PRICE);
 
-        return new Order(customerId, deliveryAddress, totalPrice, basketItems);
+        return new Order(customerId, restaurantId, deliveryAddress, totalPrice, basketItems);
     }
 }

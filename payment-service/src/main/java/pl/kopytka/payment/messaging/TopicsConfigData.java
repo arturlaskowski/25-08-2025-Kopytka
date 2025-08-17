@@ -6,8 +6,9 @@ import org.springframework.context.annotation.Configuration;
 
 @Data
 @Configuration
-@ConfigurationProperties(prefix = "payment-service.topics")
-public class TopicsConfigData {
+@ConfigurationProperties(prefix = "payment-service.kafka.topics")
+class TopicsConfigData {
     private String customerEvent;
     private String paymentCommand;
+    private String paymentEvent;
 }

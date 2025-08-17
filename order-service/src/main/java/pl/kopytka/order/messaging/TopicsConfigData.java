@@ -7,7 +7,10 @@ import org.springframework.context.annotation.Configuration;
 @Data
 @Configuration
 @ConfigurationProperties(prefix = "order-service.kafka.topics")
-class TopicsConfigData {
+public class TopicsConfigData {
     private String customerEvent;
     private String paymentCommand;
+    private String paymentEvent;
+    private String restaurantOrderCommand;
+    private String restaurantOrderEvent;
 }

@@ -19,8 +19,6 @@ public abstract class AbstractKafkaConsumer<T extends SpecificRecordBase> implem
                         List<Integer> partitions,
                         List<Long> offsets) {
 
-        log.info("Received {} {} messages", messages.size(), getMessageTypeName());
-
         messages.forEach(message -> {
             transactionHandler.runInTransaction(() -> processMessage(message));
             log.info("Processed message of type: {} with key: {}, partition: {}, offset: {}",
@@ -31,7 +29,7 @@ public abstract class AbstractKafkaConsumer<T extends SpecificRecordBase> implem
         });
     }
 
-    protected abstract void processMessage(T message);
+    protected abstract void processMessage(T messages);
 
     protected abstract String getMessageTypeName();
 }

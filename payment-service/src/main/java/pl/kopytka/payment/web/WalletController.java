@@ -4,38 +4,21 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import pl.kopytka.common.domain.valueobject.CustomerId;
 import pl.kopytka.common.domain.valueobject.Money;
 import pl.kopytka.payment.application.WalletService;
 import pl.kopytka.payment.domain.WalletId;
 import pl.kopytka.payment.web.dto.AddFundsRequest;
-import pl.kopytka.payment.web.dto.CreateWalletRequest;
 import pl.kopytka.payment.web.dto.WalletDto;
 
-import java.net.URI;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/wallets")
 @RequiredArgsConstructor
-public class WalletController {
+class WalletController {
 
     private final WalletService walletService;
-
-    @PostMapping
-    public ResponseEntity<WalletDto> createWallet(@Valid @RequestBody CreateWalletRequest request) {
-        CustomerId customerId = new CustomerId(request.customerId());
-        Money initialAmount = new Money(request.initialBalance());
-        var walletId = walletService.createWallet(customerId, initialAmount);
-
-        URI location = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(walletId.id())
-                .toUri();
-
-        return ResponseEntity.created(location).build();
-    }
 
     @PostMapping("/{walletId}/funds")
     public ResponseEntity<Void> addFunds(

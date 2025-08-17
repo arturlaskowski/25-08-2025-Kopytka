@@ -2,7 +2,7 @@ package pl.kopytka.customer.web;
 
 import org.mapstruct.Mapper;
 import pl.kopytka.customer.application.dto.CustomerDto;
-import pl.kopytka.customer.application.dto.CreateCustomerDto;
+import pl.kopytka.customer.web.dto.CreateCustomerDto;
 import pl.kopytka.customer.web.dto.CreateCustomerRequest;
 import pl.kopytka.customer.web.dto.CustomerResponse;
 

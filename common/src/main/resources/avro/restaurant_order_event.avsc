@@ -1,0 +1,83 @@
+{
+  "namespace": "pl.kopytka.avro.restaurant",
+  "type": "record",
+  "name": "RestaurantOrderEventAvroModel",
+  "fields": [
+    {
+      "name": "type",
+      "type": {
+        "type": "enum",
+        "name": "RestaurantEventType",
+        "symbols": [
+          "ORDER_APPROVED",
+          "ORDER_REJECTED"
+        ]
+      }
+    },
+    {
+      "name": "payload",
+      "type": [
+        {
+          "name": "RestaurantOrderApprovedAvroEvent",
+          "type": "record",
+          "fields": [
+            {
+              "name": "restaurantId",
+              "type": {
+                "type": "string",
+                "logicalType": "uuid"
+              }
+            },
+            {
+              "name": "orderId",
+              "type": {
+                "type": "string",
+                "logicalType": "uuid"
+              }
+            },
+            {
+              "name": "createdAt",
+              "type": {
+                "type": "long",
+                "logicalType": "timestamp-millis"
+              }
+            }
+          ]
+        },
+        {
+          "name": "RestaurantOrderRejectedAvroEvent",
+          "type": "record",
+          "fields": [
+            {
+              "name": "restaurantId",
+              "type": {
+                "type": "string",
+                "logicalType": "uuid"
+              }
+            },
+            {
+              "name": "orderId",
+              "type": {
+                "type": "string",
+                "logicalType": "uuid"
+              }
+            },
+            {
+              "name": "createdAt",
+              "type": {
+                "type": "long",
+                "logicalType": "timestamp-millis"
+              }
+            },
+            {
+              "name": "failureMessages",
+              "type": {
+                "type": "string"
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
