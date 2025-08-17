@@ -15,14 +15,12 @@ spring:
       hibernate:
         "[default_schema]": payment_schema
         "[format_sql]": true
-
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
 server:
   port: 8582
-
-# Kopytka configurations
-kopytka:
-  scheduling:
-    enabled: false  # No scheduled tasks in payment service
 
 payment-service:
   kafka:

@@ -8,7 +8,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 import pl.kopytka.avro.customer.CustomerEventAvroModel;
 import pl.kopytka.avro.customer.CustomerEventType;
-import pl.kopytka.common.kafka.consumer.AbstractKafkaConsumer;
+import pl.kopytka.common.kafka.consumer.IdempotentKafkaConsumer;
 import pl.kopytka.order.application.replicaiton.CustomerView;
 import pl.kopytka.order.application.replicaiton.CustomerViewService;
 
@@ -16,7 +16,7 @@ import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-class CustomerEventListener extends AbstractKafkaConsumer<CustomerEventAvroModel> {
+class CustomerEventListener extends IdempotentKafkaConsumer<CustomerEventAvroModel> {
 
     private final CustomerViewService customerViewService;
 

@@ -1,31 +1,38 @@
 {
-    "namespace": "pl.kopytka.avro.customer",
-    "type": "record",
-    "name": "CustomerEventAvroModel",
-    "fields": [
-        {
-            "name": "customerId",
-            "type": {
-                "type": "string",
-                "logicalType": "uuid"
-            }
-        },
-        {
-            "name": "type",
-            "type": {
-                "type": "enum",
-                "name": "CustomerEventType",
-                "symbols": [
-                    "CUSTOMER_CREATED"
-                ]
-            }
-        },
-        {
-            "name": "createdAt",
-            "type": {
-                "type": "long",
-                "logicalType": "timestamp-millis"
-            }
-        }
-    ]
+  "namespace": "pl.kopytka.avro.customer",
+  "type": "record",
+  "name": "CustomerEventAvroModel",
+  "fields": [
+    {
+      "name": "messageId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      }
+    },
+    {
+      "name": "customerId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      }
+    },
+    {
+      "name": "type",
+      "type": {
+        "type": "enum",
+        "name": "CustomerEventType",
+        "symbols": [
+          "CUSTOMER_CREATED"
+        ]
+      }
+    },
+    {
+      "name": "createdAt",
+      "type": {
+        "type": "long",
+        "logicalType": "timestamp-millis"
+      }
+    }
+  ]
 }

@@ -13,10 +13,10 @@ import org.apache.avro.message.SchemaStore;
 
 @org.apache.avro.specific.AvroGenerated
 public class CustomerEventAvroModel extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = -2817083852785979134L;
+  private static final long serialVersionUID = -5703428149918038452L;
 
 
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"CustomerEventAvroModel\",\"namespace\":\"pl.kopytka.avro.customer\",\"fields\":[{\"name\":\"customerId\",\"type\":{\"type\":\"string\",\"logicalType\":\"uuid\"}},{\"name\":\"type\",\"type\":{\"type\":\"enum\",\"name\":\"CustomerEventType\",\"symbols\":[\"CUSTOMER_CREATED\"]}},{\"name\":\"createdAt\",\"type\":{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}}]}");
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"CustomerEventAvroModel\",\"namespace\":\"pl.kopytka.avro.customer\",\"fields\":[{\"name\":\"messageId\",\"type\":{\"type\":\"string\",\"logicalType\":\"uuid\"}},{\"name\":\"customerId\",\"type\":{\"type\":\"string\",\"logicalType\":\"uuid\"}},{\"name\":\"type\",\"type\":{\"type\":\"enum\",\"name\":\"CustomerEventType\",\"symbols\":[\"CUSTOMER_CREATED\"]}},{\"name\":\"createdAt\",\"type\":{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static final SpecificData MODEL$ = new SpecificData();
@@ -76,6 +76,7 @@ public class CustomerEventAvroModel extends org.apache.avro.specific.SpecificRec
     return DECODER.decode(b);
   }
 
+  private java.util.UUID messageId;
   private java.util.UUID customerId;
   private pl.kopytka.avro.customer.CustomerEventType type;
   private java.time.Instant createdAt;
@@ -89,11 +90,13 @@ public class CustomerEventAvroModel extends org.apache.avro.specific.SpecificRec
 
   /**
    * All-args constructor.
+   * @param messageId The new value for messageId
    * @param customerId The new value for customerId
    * @param type The new value for type
    * @param createdAt The new value for createdAt
    */
-  public CustomerEventAvroModel(java.util.UUID customerId, pl.kopytka.avro.customer.CustomerEventType type, java.time.Instant createdAt) {
+  public CustomerEventAvroModel(java.util.UUID messageId, java.util.UUID customerId, pl.kopytka.avro.customer.CustomerEventType type, java.time.Instant createdAt) {
+    this.messageId = messageId;
     this.customerId = customerId;
     this.type = type;
     this.createdAt = createdAt.truncatedTo(java.time.temporal.ChronoUnit.MILLIS);
@@ -109,15 +112,17 @@ public class CustomerEventAvroModel extends org.apache.avro.specific.SpecificRec
   @Override
   public java.lang.Object get(int field$) {
     switch (field$) {
-    case 0: return customerId;
-    case 1: return type;
-    case 2: return createdAt;
+    case 0: return messageId;
+    case 1: return customerId;
+    case 2: return type;
+    case 3: return createdAt;
     default: throw new IndexOutOfBoundsException("Invalid index: " + field$);
     }
   }
 
   private static final org.apache.avro.Conversion<?>[] conversions =
       new org.apache.avro.Conversion<?>[] {
+      new org.apache.avro.Conversions.UUIDConversion(),
       new org.apache.avro.Conversions.UUIDConversion(),
       null,
       new org.apache.avro.data.TimeConversions.TimestampMillisConversion(),
@@ -134,11 +139,29 @@ public class CustomerEventAvroModel extends org.apache.avro.specific.SpecificRec
   @SuppressWarnings(value="unchecked")
   public void put(int field$, java.lang.Object value$) {
     switch (field$) {
-    case 0: customerId = (java.util.UUID)value$; break;
-    case 1: type = (pl.kopytka.avro.customer.CustomerEventType)value$; break;
-    case 2: createdAt = (java.time.Instant)value$; break;
+    case 0: messageId = (java.util.UUID)value$; break;
+    case 1: customerId = (java.util.UUID)value$; break;
+    case 2: type = (pl.kopytka.avro.customer.CustomerEventType)value$; break;
+    case 3: createdAt = (java.time.Instant)value$; break;
     default: throw new IndexOutOfBoundsException("Invalid index: " + field$);
     }
+  }
+
+  /**
+   * Gets the value of the 'messageId' field.
+   * @return The value of the 'messageId' field.
+   */
+  public java.util.UUID getMessageId() {
+    return messageId;
+  }
+
+
+  /**
+   * Sets the value of the 'messageId' field.
+   * @param value the value to set.
+   */
+  public void setMessageId(java.util.UUID value) {
+    this.messageId = value;
   }
 
   /**
@@ -233,6 +256,7 @@ public class CustomerEventAvroModel extends org.apache.avro.specific.SpecificRec
   public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<CustomerEventAvroModel>
     implements org.apache.avro.data.RecordBuilder<CustomerEventAvroModel> {
 
+    private java.util.UUID messageId;
     private java.util.UUID customerId;
     private pl.kopytka.avro.customer.CustomerEventType type;
     private java.time.Instant createdAt;
@@ -248,17 +272,21 @@ public class CustomerEventAvroModel extends org.apache.avro.specific.SpecificRec
      */
     private Builder(pl.kopytka.avro.customer.CustomerEventAvroModel.Builder other) {
       super(other);
-      if (isValidValue(fields()[0], other.customerId)) {
-        this.customerId = data().deepCopy(fields()[0].schema(), other.customerId);
+      if (isValidValue(fields()[0], other.messageId)) {
+        this.messageId = data().deepCopy(fields()[0].schema(), other.messageId);
         fieldSetFlags()[0] = other.fieldSetFlags()[0];
       }
-      if (isValidValue(fields()[1], other.type)) {
-        this.type = data().deepCopy(fields()[1].schema(), other.type);
+      if (isValidValue(fields()[1], other.customerId)) {
+        this.customerId = data().deepCopy(fields()[1].schema(), other.customerId);
         fieldSetFlags()[1] = other.fieldSetFlags()[1];
       }
-      if (isValidValue(fields()[2], other.createdAt)) {
-        this.createdAt = data().deepCopy(fields()[2].schema(), other.createdAt);
+      if (isValidValue(fields()[2], other.type)) {
+        this.type = data().deepCopy(fields()[2].schema(), other.type);
         fieldSetFlags()[2] = other.fieldSetFlags()[2];
+      }
+      if (isValidValue(fields()[3], other.createdAt)) {
+        this.createdAt = data().deepCopy(fields()[3].schema(), other.createdAt);
+        fieldSetFlags()[3] = other.fieldSetFlags()[3];
       }
     }
 
@@ -268,18 +296,62 @@ public class CustomerEventAvroModel extends org.apache.avro.specific.SpecificRec
      */
     private Builder(pl.kopytka.avro.customer.CustomerEventAvroModel other) {
       super(SCHEMA$, MODEL$);
-      if (isValidValue(fields()[0], other.customerId)) {
-        this.customerId = data().deepCopy(fields()[0].schema(), other.customerId);
+      if (isValidValue(fields()[0], other.messageId)) {
+        this.messageId = data().deepCopy(fields()[0].schema(), other.messageId);
         fieldSetFlags()[0] = true;
       }
-      if (isValidValue(fields()[1], other.type)) {
-        this.type = data().deepCopy(fields()[1].schema(), other.type);
+      if (isValidValue(fields()[1], other.customerId)) {
+        this.customerId = data().deepCopy(fields()[1].schema(), other.customerId);
         fieldSetFlags()[1] = true;
       }
-      if (isValidValue(fields()[2], other.createdAt)) {
-        this.createdAt = data().deepCopy(fields()[2].schema(), other.createdAt);
+      if (isValidValue(fields()[2], other.type)) {
+        this.type = data().deepCopy(fields()[2].schema(), other.type);
         fieldSetFlags()[2] = true;
       }
+      if (isValidValue(fields()[3], other.createdAt)) {
+        this.createdAt = data().deepCopy(fields()[3].schema(), other.createdAt);
+        fieldSetFlags()[3] = true;
+      }
+    }
+
+    /**
+      * Gets the value of the 'messageId' field.
+      * @return The value.
+      */
+    public java.util.UUID getMessageId() {
+      return messageId;
+    }
+
+
+    /**
+      * Sets the value of the 'messageId' field.
+      * @param value The value of 'messageId'.
+      * @return This builder.
+      */
+    public pl.kopytka.avro.customer.CustomerEventAvroModel.Builder setMessageId(java.util.UUID value) {
+      validate(fields()[0], value);
+      this.messageId = value;
+      fieldSetFlags()[0] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'messageId' field has been set.
+      * @return True if the 'messageId' field has been set, false otherwise.
+      */
+    public boolean hasMessageId() {
+      return fieldSetFlags()[0];
+    }
+
+
+    /**
+      * Clears the value of the 'messageId' field.
+      * @return This builder.
+      */
+    public pl.kopytka.avro.customer.CustomerEventAvroModel.Builder clearMessageId() {
+      messageId = null;
+      fieldSetFlags()[0] = false;
+      return this;
     }
 
     /**
@@ -297,9 +369,9 @@ public class CustomerEventAvroModel extends org.apache.avro.specific.SpecificRec
       * @return This builder.
       */
     public pl.kopytka.avro.customer.CustomerEventAvroModel.Builder setCustomerId(java.util.UUID value) {
-      validate(fields()[0], value);
+      validate(fields()[1], value);
       this.customerId = value;
-      fieldSetFlags()[0] = true;
+      fieldSetFlags()[1] = true;
       return this;
     }
 
@@ -308,7 +380,7 @@ public class CustomerEventAvroModel extends org.apache.avro.specific.SpecificRec
       * @return True if the 'customerId' field has been set, false otherwise.
       */
     public boolean hasCustomerId() {
-      return fieldSetFlags()[0];
+      return fieldSetFlags()[1];
     }
 
 
@@ -318,7 +390,7 @@ public class CustomerEventAvroModel extends org.apache.avro.specific.SpecificRec
       */
     public pl.kopytka.avro.customer.CustomerEventAvroModel.Builder clearCustomerId() {
       customerId = null;
-      fieldSetFlags()[0] = false;
+      fieldSetFlags()[1] = false;
       return this;
     }
 
@@ -337,9 +409,9 @@ public class CustomerEventAvroModel extends org.apache.avro.specific.SpecificRec
       * @return This builder.
       */
     public pl.kopytka.avro.customer.CustomerEventAvroModel.Builder setType(pl.kopytka.avro.customer.CustomerEventType value) {
-      validate(fields()[1], value);
+      validate(fields()[2], value);
       this.type = value;
-      fieldSetFlags()[1] = true;
+      fieldSetFlags()[2] = true;
       return this;
     }
 
@@ -348,7 +420,7 @@ public class CustomerEventAvroModel extends org.apache.avro.specific.SpecificRec
       * @return True if the 'type' field has been set, false otherwise.
       */
     public boolean hasType() {
-      return fieldSetFlags()[1];
+      return fieldSetFlags()[2];
     }
 
 
@@ -358,7 +430,7 @@ public class CustomerEventAvroModel extends org.apache.avro.specific.SpecificRec
       */
     public pl.kopytka.avro.customer.CustomerEventAvroModel.Builder clearType() {
       type = null;
-      fieldSetFlags()[1] = false;
+      fieldSetFlags()[2] = false;
       return this;
     }
 
@@ -377,9 +449,9 @@ public class CustomerEventAvroModel extends org.apache.avro.specific.SpecificRec
       * @return This builder.
       */
     public pl.kopytka.avro.customer.CustomerEventAvroModel.Builder setCreatedAt(java.time.Instant value) {
-      validate(fields()[2], value);
+      validate(fields()[3], value);
       this.createdAt = value.truncatedTo(java.time.temporal.ChronoUnit.MILLIS);
-      fieldSetFlags()[2] = true;
+      fieldSetFlags()[3] = true;
       return this;
     }
 
@@ -388,7 +460,7 @@ public class CustomerEventAvroModel extends org.apache.avro.specific.SpecificRec
       * @return True if the 'createdAt' field has been set, false otherwise.
       */
     public boolean hasCreatedAt() {
-      return fieldSetFlags()[2];
+      return fieldSetFlags()[3];
     }
 
 
@@ -397,7 +469,7 @@ public class CustomerEventAvroModel extends org.apache.avro.specific.SpecificRec
       * @return This builder.
       */
     public pl.kopytka.avro.customer.CustomerEventAvroModel.Builder clearCreatedAt() {
-      fieldSetFlags()[2] = false;
+      fieldSetFlags()[3] = false;
       return this;
     }
 
@@ -406,9 +478,10 @@ public class CustomerEventAvroModel extends org.apache.avro.specific.SpecificRec
     public CustomerEventAvroModel build() {
       try {
         CustomerEventAvroModel record = new CustomerEventAvroModel();
-        record.customerId = fieldSetFlags()[0] ? this.customerId : (java.util.UUID) defaultValue(fields()[0]);
-        record.type = fieldSetFlags()[1] ? this.type : (pl.kopytka.avro.customer.CustomerEventType) defaultValue(fields()[1]);
-        record.createdAt = fieldSetFlags()[2] ? this.createdAt : (java.time.Instant) defaultValue(fields()[2]);
+        record.messageId = fieldSetFlags()[0] ? this.messageId : (java.util.UUID) defaultValue(fields()[0]);
+        record.customerId = fieldSetFlags()[1] ? this.customerId : (java.util.UUID) defaultValue(fields()[1]);
+        record.type = fieldSetFlags()[2] ? this.type : (pl.kopytka.avro.customer.CustomerEventType) defaultValue(fields()[2]);
+        record.createdAt = fieldSetFlags()[3] ? this.createdAt : (java.time.Instant) defaultValue(fields()[3]);
         return record;
       } catch (org.apache.avro.AvroMissingFieldException e) {
         throw e;

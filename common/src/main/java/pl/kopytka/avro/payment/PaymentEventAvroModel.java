@@ -13,10 +13,10 @@ import org.apache.avro.message.SchemaStore;
 
 @org.apache.avro.specific.AvroGenerated
 public class PaymentEventAvroModel extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = -1048044300823453142L;
+  private static final long serialVersionUID = 6069323365681534716L;
 
 
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"PaymentEventAvroModel\",\"namespace\":\"pl.kopytka.avro.payment\",\"fields\":[{\"name\":\"type\",\"type\":{\"type\":\"enum\",\"name\":\"PaymentEventType\",\"symbols\":[\"PAYMENT_COMPLETED\",\"PAYMENT_CANCELLED\",\"PAYMENT_FAILED\"]}},{\"name\":\"payload\",\"type\":[{\"type\":\"record\",\"name\":\"PaymentCompletedAvroEvent\",\"fields\":[{\"name\":\"paymentId\",\"type\":{\"type\":\"string\",\"logicalType\":\"uuid\"}},{\"name\":\"customerId\",\"type\":{\"type\":\"string\",\"logicalType\":\"uuid\"}},{\"name\":\"orderId\",\"type\":{\"type\":\"string\",\"logicalType\":\"uuid\"}},{\"name\":\"price\",\"type\":{\"type\":\"bytes\",\"logicalType\":\"decimal\",\"precision\":10,\"scale\":2}},{\"name\":\"createdAt\",\"type\":{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}}]},{\"type\":\"record\",\"name\":\"PaymentCancelledAvroEvent\",\"fields\":[{\"name\":\"paymentId\",\"type\":{\"type\":\"string\",\"logicalType\":\"uuid\"}},{\"name\":\"customerId\",\"type\":{\"type\":\"string\",\"logicalType\":\"uuid\"}},{\"name\":\"orderId\",\"type\":{\"type\":\"string\",\"logicalType\":\"uuid\"}},{\"name\":\"createdAt\",\"type\":{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}}]},{\"type\":\"record\",\"name\":\"PaymentFailedAvroEvent\",\"fields\":[{\"name\":\"paymentId\",\"type\":{\"type\":\"string\",\"logicalType\":\"uuid\"}},{\"name\":\"customerId\",\"type\":{\"type\":\"string\",\"logicalType\":\"uuid\"}},{\"name\":\"orderId\",\"type\":{\"type\":\"string\",\"logicalType\":\"uuid\"}},{\"name\":\"createdAt\",\"type\":{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}},{\"name\":\"failureMessages\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}}]}]}]}");
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"PaymentEventAvroModel\",\"namespace\":\"pl.kopytka.avro.payment\",\"fields\":[{\"name\":\"messageId\",\"type\":{\"type\":\"string\",\"logicalType\":\"uuid\"}},{\"name\":\"type\",\"type\":{\"type\":\"enum\",\"name\":\"PaymentEventType\",\"symbols\":[\"PAYMENT_COMPLETED\",\"PAYMENT_CANCELLED\",\"PAYMENT_FAILED\"]}},{\"name\":\"payload\",\"type\":[{\"type\":\"record\",\"name\":\"PaymentCompletedAvroEvent\",\"fields\":[{\"name\":\"paymentId\",\"type\":{\"type\":\"string\",\"logicalType\":\"uuid\"}},{\"name\":\"customerId\",\"type\":{\"type\":\"string\",\"logicalType\":\"uuid\"}},{\"name\":\"orderId\",\"type\":{\"type\":\"string\",\"logicalType\":\"uuid\"}},{\"name\":\"price\",\"type\":{\"type\":\"bytes\",\"logicalType\":\"decimal\",\"precision\":10,\"scale\":2}},{\"name\":\"createdAt\",\"type\":{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}}]},{\"type\":\"record\",\"name\":\"PaymentCancelledAvroEvent\",\"fields\":[{\"name\":\"paymentId\",\"type\":{\"type\":\"string\",\"logicalType\":\"uuid\"}},{\"name\":\"customerId\",\"type\":{\"type\":\"string\",\"logicalType\":\"uuid\"}},{\"name\":\"orderId\",\"type\":{\"type\":\"string\",\"logicalType\":\"uuid\"}},{\"name\":\"createdAt\",\"type\":{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}}]},{\"type\":\"record\",\"name\":\"PaymentFailedAvroEvent\",\"fields\":[{\"name\":\"paymentId\",\"type\":{\"type\":\"string\",\"logicalType\":\"uuid\"}},{\"name\":\"customerId\",\"type\":{\"type\":\"string\",\"logicalType\":\"uuid\"}},{\"name\":\"orderId\",\"type\":{\"type\":\"string\",\"logicalType\":\"uuid\"}},{\"name\":\"createdAt\",\"type\":{\"type\":\"long\",\"logicalType\":\"timestamp-millis\"}},{\"name\":\"failureMessages\",\"type\":{\"type\":\"string\",\"avro.java.string\":\"String\"}}]}]}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static final SpecificData MODEL$ = new SpecificData();
@@ -77,6 +77,7 @@ public class PaymentEventAvroModel extends org.apache.avro.specific.SpecificReco
     return DECODER.decode(b);
   }
 
+  private java.util.UUID messageId;
   private pl.kopytka.avro.payment.PaymentEventType type;
   private java.lang.Object payload;
 
@@ -89,10 +90,12 @@ public class PaymentEventAvroModel extends org.apache.avro.specific.SpecificReco
 
   /**
    * All-args constructor.
+   * @param messageId The new value for messageId
    * @param type The new value for type
    * @param payload The new value for payload
    */
-  public PaymentEventAvroModel(pl.kopytka.avro.payment.PaymentEventType type, java.lang.Object payload) {
+  public PaymentEventAvroModel(java.util.UUID messageId, pl.kopytka.avro.payment.PaymentEventType type, java.lang.Object payload) {
+    this.messageId = messageId;
     this.type = type;
     this.payload = payload;
   }
@@ -107,10 +110,24 @@ public class PaymentEventAvroModel extends org.apache.avro.specific.SpecificReco
   @Override
   public java.lang.Object get(int field$) {
     switch (field$) {
-    case 0: return type;
-    case 1: return payload;
+    case 0: return messageId;
+    case 1: return type;
+    case 2: return payload;
     default: throw new IndexOutOfBoundsException("Invalid index: " + field$);
     }
+  }
+
+  private static final org.apache.avro.Conversion<?>[] conversions =
+      new org.apache.avro.Conversion<?>[] {
+      new org.apache.avro.Conversions.UUIDConversion(),
+      null,
+      null,
+      null
+  };
+
+  @Override
+  public org.apache.avro.Conversion<?> getConversion(int field) {
+    return conversions[field];
   }
 
   // Used by DatumReader.  Applications should not call.
@@ -118,10 +135,28 @@ public class PaymentEventAvroModel extends org.apache.avro.specific.SpecificReco
   @SuppressWarnings(value="unchecked")
   public void put(int field$, java.lang.Object value$) {
     switch (field$) {
-    case 0: type = (pl.kopytka.avro.payment.PaymentEventType)value$; break;
-    case 1: payload = value$; break;
+    case 0: messageId = (java.util.UUID)value$; break;
+    case 1: type = (pl.kopytka.avro.payment.PaymentEventType)value$; break;
+    case 2: payload = value$; break;
     default: throw new IndexOutOfBoundsException("Invalid index: " + field$);
     }
+  }
+
+  /**
+   * Gets the value of the 'messageId' field.
+   * @return The value of the 'messageId' field.
+   */
+  public java.util.UUID getMessageId() {
+    return messageId;
+  }
+
+
+  /**
+   * Sets the value of the 'messageId' field.
+   * @param value the value to set.
+   */
+  public void setMessageId(java.util.UUID value) {
+    this.messageId = value;
   }
 
   /**
@@ -199,6 +234,7 @@ public class PaymentEventAvroModel extends org.apache.avro.specific.SpecificReco
   public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<PaymentEventAvroModel>
     implements org.apache.avro.data.RecordBuilder<PaymentEventAvroModel> {
 
+    private java.util.UUID messageId;
     private pl.kopytka.avro.payment.PaymentEventType type;
     private java.lang.Object payload;
 
@@ -213,13 +249,17 @@ public class PaymentEventAvroModel extends org.apache.avro.specific.SpecificReco
      */
     private Builder(pl.kopytka.avro.payment.PaymentEventAvroModel.Builder other) {
       super(other);
-      if (isValidValue(fields()[0], other.type)) {
-        this.type = data().deepCopy(fields()[0].schema(), other.type);
+      if (isValidValue(fields()[0], other.messageId)) {
+        this.messageId = data().deepCopy(fields()[0].schema(), other.messageId);
         fieldSetFlags()[0] = other.fieldSetFlags()[0];
       }
-      if (isValidValue(fields()[1], other.payload)) {
-        this.payload = data().deepCopy(fields()[1].schema(), other.payload);
+      if (isValidValue(fields()[1], other.type)) {
+        this.type = data().deepCopy(fields()[1].schema(), other.type);
         fieldSetFlags()[1] = other.fieldSetFlags()[1];
+      }
+      if (isValidValue(fields()[2], other.payload)) {
+        this.payload = data().deepCopy(fields()[2].schema(), other.payload);
+        fieldSetFlags()[2] = other.fieldSetFlags()[2];
       }
     }
 
@@ -229,14 +269,58 @@ public class PaymentEventAvroModel extends org.apache.avro.specific.SpecificReco
      */
     private Builder(pl.kopytka.avro.payment.PaymentEventAvroModel other) {
       super(SCHEMA$, MODEL$);
-      if (isValidValue(fields()[0], other.type)) {
-        this.type = data().deepCopy(fields()[0].schema(), other.type);
+      if (isValidValue(fields()[0], other.messageId)) {
+        this.messageId = data().deepCopy(fields()[0].schema(), other.messageId);
         fieldSetFlags()[0] = true;
       }
-      if (isValidValue(fields()[1], other.payload)) {
-        this.payload = data().deepCopy(fields()[1].schema(), other.payload);
+      if (isValidValue(fields()[1], other.type)) {
+        this.type = data().deepCopy(fields()[1].schema(), other.type);
         fieldSetFlags()[1] = true;
       }
+      if (isValidValue(fields()[2], other.payload)) {
+        this.payload = data().deepCopy(fields()[2].schema(), other.payload);
+        fieldSetFlags()[2] = true;
+      }
+    }
+
+    /**
+      * Gets the value of the 'messageId' field.
+      * @return The value.
+      */
+    public java.util.UUID getMessageId() {
+      return messageId;
+    }
+
+
+    /**
+      * Sets the value of the 'messageId' field.
+      * @param value The value of 'messageId'.
+      * @return This builder.
+      */
+    public pl.kopytka.avro.payment.PaymentEventAvroModel.Builder setMessageId(java.util.UUID value) {
+      validate(fields()[0], value);
+      this.messageId = value;
+      fieldSetFlags()[0] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'messageId' field has been set.
+      * @return True if the 'messageId' field has been set, false otherwise.
+      */
+    public boolean hasMessageId() {
+      return fieldSetFlags()[0];
+    }
+
+
+    /**
+      * Clears the value of the 'messageId' field.
+      * @return This builder.
+      */
+    public pl.kopytka.avro.payment.PaymentEventAvroModel.Builder clearMessageId() {
+      messageId = null;
+      fieldSetFlags()[0] = false;
+      return this;
     }
 
     /**
@@ -254,9 +338,9 @@ public class PaymentEventAvroModel extends org.apache.avro.specific.SpecificReco
       * @return This builder.
       */
     public pl.kopytka.avro.payment.PaymentEventAvroModel.Builder setType(pl.kopytka.avro.payment.PaymentEventType value) {
-      validate(fields()[0], value);
+      validate(fields()[1], value);
       this.type = value;
-      fieldSetFlags()[0] = true;
+      fieldSetFlags()[1] = true;
       return this;
     }
 
@@ -265,7 +349,7 @@ public class PaymentEventAvroModel extends org.apache.avro.specific.SpecificReco
       * @return True if the 'type' field has been set, false otherwise.
       */
     public boolean hasType() {
-      return fieldSetFlags()[0];
+      return fieldSetFlags()[1];
     }
 
 
@@ -275,7 +359,7 @@ public class PaymentEventAvroModel extends org.apache.avro.specific.SpecificReco
       */
     public pl.kopytka.avro.payment.PaymentEventAvroModel.Builder clearType() {
       type = null;
-      fieldSetFlags()[0] = false;
+      fieldSetFlags()[1] = false;
       return this;
     }
 
@@ -294,9 +378,9 @@ public class PaymentEventAvroModel extends org.apache.avro.specific.SpecificReco
       * @return This builder.
       */
     public pl.kopytka.avro.payment.PaymentEventAvroModel.Builder setPayload(java.lang.Object value) {
-      validate(fields()[1], value);
+      validate(fields()[2], value);
       this.payload = value;
-      fieldSetFlags()[1] = true;
+      fieldSetFlags()[2] = true;
       return this;
     }
 
@@ -305,7 +389,7 @@ public class PaymentEventAvroModel extends org.apache.avro.specific.SpecificReco
       * @return True if the 'payload' field has been set, false otherwise.
       */
     public boolean hasPayload() {
-      return fieldSetFlags()[1];
+      return fieldSetFlags()[2];
     }
 
 
@@ -315,7 +399,7 @@ public class PaymentEventAvroModel extends org.apache.avro.specific.SpecificReco
       */
     public pl.kopytka.avro.payment.PaymentEventAvroModel.Builder clearPayload() {
       payload = null;
-      fieldSetFlags()[1] = false;
+      fieldSetFlags()[2] = false;
       return this;
     }
 
@@ -324,8 +408,9 @@ public class PaymentEventAvroModel extends org.apache.avro.specific.SpecificReco
     public PaymentEventAvroModel build() {
       try {
         PaymentEventAvroModel record = new PaymentEventAvroModel();
-        record.type = fieldSetFlags()[0] ? this.type : (pl.kopytka.avro.payment.PaymentEventType) defaultValue(fields()[0]);
-        record.payload = fieldSetFlags()[1] ? this.payload :  defaultValue(fields()[1]);
+        record.messageId = fieldSetFlags()[0] ? this.messageId : (java.util.UUID) defaultValue(fields()[0]);
+        record.type = fieldSetFlags()[1] ? this.type : (pl.kopytka.avro.payment.PaymentEventType) defaultValue(fields()[1]);
+        record.payload = fieldSetFlags()[2] ? this.payload :  defaultValue(fields()[2]);
         return record;
       } catch (org.apache.avro.AvroMissingFieldException e) {
         throw e;

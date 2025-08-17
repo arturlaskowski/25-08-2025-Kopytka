@@ -8,7 +8,7 @@ import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.stereotype.Component;
 import pl.kopytka.avro.restaurant.RestaurantApproveOrderAvroCommand;
 import pl.kopytka.avro.restaurant.RestaurantOrderCommandAvroModel;
-import pl.kopytka.common.kafka.consumer.AbstractKafkaConsumer;
+import pl.kopytka.common.kafka.consumer.IdempotentKafkaConsumer;
 import pl.kopytka.restaurant.application.RestaurantOrderApplicationService;
 import pl.kopytka.restaurant.application.dto.ProductDto;
 
@@ -19,7 +19,7 @@ import static org.springframework.kafka.support.KafkaHeaders.*;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-class RestaurantOrderCommandListener extends AbstractKafkaConsumer<RestaurantOrderCommandAvroModel> {
+class RestaurantOrderCommandListener extends IdempotentKafkaConsumer<RestaurantOrderCommandAvroModel> {
 
     private final RestaurantOrderApplicationService restaurantOrderApplicationService;
 

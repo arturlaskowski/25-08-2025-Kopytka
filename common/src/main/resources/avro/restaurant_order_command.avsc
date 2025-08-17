@@ -4,6 +4,13 @@
   "name": "RestaurantOrderCommandAvroModel",
   "fields": [
     {
+      "name": "messageId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      }
+    },
+    {
       "name": "type",
       "type": {
         "type": "enum",

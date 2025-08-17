@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 import pl.kopytka.avro.payment.CancelPaymentAvroCommand;
 import pl.kopytka.avro.payment.CreatePaymentAvroCommand;
 import pl.kopytka.avro.payment.PaymentCommandAvroModel;
-import pl.kopytka.common.kafka.consumer.AbstractKafkaConsumer;
+import pl.kopytka.common.kafka.consumer.IdempotentKafkaConsumer;
 import pl.kopytka.payment.application.PaymentApplicationService;
 import pl.kopytka.payment.application.dto.CancelPaymentCommand;
 import pl.kopytka.payment.application.dto.MakePaymentCommand;
@@ -21,7 +21,7 @@ import static org.springframework.kafka.support.KafkaHeaders.*;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-class PaymentCommandListener extends AbstractKafkaConsumer<PaymentCommandAvroModel> {
+class PaymentCommandListener extends IdempotentKafkaConsumer<PaymentCommandAvroModel> {
 
     private final PaymentApplicationService paymentApplicationService;
 

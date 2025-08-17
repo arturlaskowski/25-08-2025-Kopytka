@@ -43,6 +43,7 @@ class KafkaPaymentEventPublisher implements PaymentEventPublisher {
                 .build();
 
         PaymentEventAvroModel eventMessage = PaymentEventAvroModel.newBuilder()
+                .setMessageId(UUID.randomUUID())
                 .setType(PaymentEventType.PAYMENT_COMPLETED)
                 .setPayload(completedEvent)
                 .build();
@@ -62,6 +63,7 @@ class KafkaPaymentEventPublisher implements PaymentEventPublisher {
                 .build();
 
         PaymentEventAvroModel eventMessage = PaymentEventAvroModel.newBuilder()
+                .setMessageId(UUID.randomUUID())
                 .setType(PaymentEventType.PAYMENT_FAILED)
                 .setPayload(failedEvent)
                 .build();
@@ -80,6 +82,7 @@ class KafkaPaymentEventPublisher implements PaymentEventPublisher {
                 .build();
 
         PaymentEventAvroModel eventMessage = PaymentEventAvroModel.newBuilder()
+                .setMessageId(UUID.randomUUID())
                 .setType(PaymentEventType.PAYMENT_CANCELLED)
                 .setPayload(canceledEvent)
                 .build();

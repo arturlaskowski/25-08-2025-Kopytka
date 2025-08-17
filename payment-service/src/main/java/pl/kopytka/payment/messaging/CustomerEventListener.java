@@ -11,7 +11,7 @@ import pl.kopytka.avro.customer.CustomerEventAvroModel;
 import pl.kopytka.avro.customer.CustomerEventType;
 import pl.kopytka.common.domain.valueobject.CustomerId;
 import pl.kopytka.common.domain.valueobject.Money;
-import pl.kopytka.common.kafka.consumer.AbstractKafkaConsumer;
+import pl.kopytka.common.kafka.consumer.IdempotentKafkaConsumer;
 import pl.kopytka.payment.application.WalletService;
 
 import java.util.List;
@@ -19,7 +19,7 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-class CustomerEventListener extends AbstractKafkaConsumer<CustomerEventAvroModel> {
+class CustomerEventListener extends IdempotentKafkaConsumer<CustomerEventAvroModel> {
 
     private final WalletService walletService;
 

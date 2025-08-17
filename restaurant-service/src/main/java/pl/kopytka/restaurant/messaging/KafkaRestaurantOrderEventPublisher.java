@@ -15,6 +15,7 @@ import pl.kopytka.restaurant.domain.event.RestaurantOrderEvent;
 import pl.kopytka.restaurant.messaging.exception.RestaurantMessagingException;
 
 import java.time.Instant;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -49,6 +50,7 @@ class KafkaRestaurantOrderEventPublisher implements RestaurantOrderEventPublishe
                 .build();
 
         var eventMessage = RestaurantOrderEventAvroModel.newBuilder()
+                .setMessageId(UUID.randomUUID())
                 .setType(RestaurantEventType.ORDER_APPROVED)
                 .setPayload(approvedEvent)
                 .build();
@@ -66,6 +68,7 @@ class KafkaRestaurantOrderEventPublisher implements RestaurantOrderEventPublishe
                 .build();
 
         var eventMessage = RestaurantOrderEventAvroModel.newBuilder()
+                .setMessageId(UUID.randomUUID())
                 .setType(RestaurantEventType.ORDER_REJECTED)
                 .setPayload(rejectedEvent)
                 .build();

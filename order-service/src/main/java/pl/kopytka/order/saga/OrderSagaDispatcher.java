@@ -22,6 +22,7 @@ import pl.kopytka.order.messaging.TopicsConfigData;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @Component
@@ -95,6 +96,7 @@ public class OrderSagaDispatcher {
                 Instant.now()
         );
         var paymentCommandAvroModel = new PaymentCommandAvroModel(
+                UUID.randomUUID(), // messageId
                 PaymentCommandType.CREATE_PAYMENT,
                 processPaymentCommandAvroModel
         );
@@ -110,6 +112,7 @@ public class OrderSagaDispatcher {
                 Instant.now()
         );
         var paymentCommandAvroModel = new PaymentCommandAvroModel(
+                UUID.randomUUID(), // messageId
                 PaymentCommandType.CANCEL_PAYMENT,
                 cancelPaymentCommand
         );
@@ -133,6 +136,7 @@ public class OrderSagaDispatcher {
                 .setCreatedAt(Instant.now())
                 .build();
         var restaurantCommandAvroModel = new RestaurantOrderCommandAvroModel(
+                UUID.randomUUID(), // messageId
                 RestaurantCommandType.APPROVE_ORDER,
                 restaurantApproveOrderCommand
         );

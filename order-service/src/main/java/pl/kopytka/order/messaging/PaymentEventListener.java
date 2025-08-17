@@ -11,14 +11,14 @@ import pl.kopytka.avro.payment.PaymentCompletedAvroEvent;
 import pl.kopytka.avro.payment.PaymentEventAvroModel;
 import pl.kopytka.avro.payment.PaymentFailedAvroEvent;
 import pl.kopytka.common.domain.valueobject.OrderId;
-import pl.kopytka.common.kafka.consumer.AbstractKafkaConsumer;
+import pl.kopytka.common.kafka.consumer.IdempotentKafkaConsumer;
 import pl.kopytka.order.application.OrderApplicationService;
 
 import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-class PaymentEventListener extends AbstractKafkaConsumer<PaymentEventAvroModel> {
+class PaymentEventListener extends IdempotentKafkaConsumer<PaymentEventAvroModel> {
 
     private final OrderApplicationService orderApplicationService;
 
@@ -36,10 +36,8 @@ class PaymentEventListener extends AbstractKafkaConsumer<PaymentEventAvroModel> 
     @Override
     protected void processMessage(PaymentEventAvroModel event) {
         switch (event.getType()) {
-            case PAYMENT_COMPLETED ->
-                    handlePaymentCompletedAvroEvent(((PaymentCompletedAvroEvent) event.getPayload()));
-            case PAYMENT_CANCELLED ->
-                    handlePaymentCancelledAvroEvent((PaymentCancelledAvroEvent) event.getPayload());
+            case PAYMENT_COMPLETED -> handlePaymentCompletedAvroEvent(((PaymentCompletedAvroEvent) event.getPayload()));
+            case PAYMENT_CANCELLED -> handlePaymentCancelledAvroEvent((PaymentCancelledAvroEvent) event.getPayload());
             case PAYMENT_FAILED -> handlePaymentFailedAvroEvent((PaymentFailedAvroEvent) event.getPayload());
         }
     }

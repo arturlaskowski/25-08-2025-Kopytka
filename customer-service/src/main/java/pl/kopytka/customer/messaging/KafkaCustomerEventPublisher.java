@@ -8,6 +8,8 @@ import pl.kopytka.common.kafka.producer.KafkaProducer;
 import pl.kopytka.customer.domain.CustomerEventPublisher;
 import pl.kopytka.customer.domain.event.CustomerEvent;
 
+import java.util.UUID;
+
 @Component
 @RequiredArgsConstructor
 class KafkaCustomerEventPublisher implements CustomerEventPublisher {
@@ -18,7 +20,7 @@ class KafkaCustomerEventPublisher implements CustomerEventPublisher {
     @Override
     public void publish(CustomerEvent customerEvent) {
         var customerId = customerEvent.getCustomer().getCustomerId().id();
-        var customerEventAvroModel = new CustomerEventAvroModel(customerId,
+        var customerEventAvroModel = new CustomerEventAvroModel(UUID.randomUUID(), customerId,
                 CustomerEventType.CUSTOMER_CREATED, customerEvent.getCreatedAt());
 
         kafkaProducer.send(topicsConfigData.getCustomerEvent(),

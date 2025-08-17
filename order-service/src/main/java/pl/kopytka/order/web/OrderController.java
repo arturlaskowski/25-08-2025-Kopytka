@@ -24,7 +24,7 @@ class OrderController {
     private final OrderApplicationService orderApplicationService;
 
     @PostMapping
-    public ResponseEntity<Void> processOrder(@Valid @RequestBody CreateOrderRequest request) {
+    public ResponseEntity<Void> createOrder(@Valid @RequestBody CreateOrderRequest request) {
         CreateOrderCommand command = mapToCommand(request);
         OrderId orderId = orderApplicationService.createOrder(command);
 

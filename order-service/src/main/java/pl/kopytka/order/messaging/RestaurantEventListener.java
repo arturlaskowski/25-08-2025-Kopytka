@@ -10,14 +10,14 @@ import pl.kopytka.avro.restaurant.RestaurantOrderApprovedAvroEvent;
 import pl.kopytka.avro.restaurant.RestaurantOrderEventAvroModel;
 import pl.kopytka.avro.restaurant.RestaurantOrderRejectedAvroEvent;
 import pl.kopytka.common.domain.valueobject.OrderId;
-import pl.kopytka.common.kafka.consumer.AbstractKafkaConsumer;
+import pl.kopytka.common.kafka.consumer.IdempotentKafkaConsumer;
 import pl.kopytka.order.application.OrderApplicationService;
 
 import java.util.List;
 
 @Component
 @RequiredArgsConstructor
-class RestaurantEventListener extends AbstractKafkaConsumer<RestaurantOrderEventAvroModel> {
+class RestaurantEventListener extends IdempotentKafkaConsumer<RestaurantOrderEventAvroModel> {
 
     private final OrderApplicationService orderApplicationService;
 
