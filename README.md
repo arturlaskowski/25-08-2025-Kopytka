@@ -1,10 +1,23 @@
-# CQRS – jedna tabela, projekcja
+# CQRS – replikacja danych
 
-Rozwiązanie znajdujące się na tym branchu nie jest zazwyczaj rozwiązaniem docelowym, lecz jedynie etapem przejściowym.
-Polega ono na tym, że dwie encje korzystają z jednej tabeli 
-* [Order](src/main/java/pl/kopytka/order/domain/Order.java) jedna służy do modyfikacji stanu, 
-* [TrackingOrderProjection](src/main/java/pl/kopytka/trackorder/TrackingOrderProjection.java) a druga, często nazywana **projekcją** lub **repliką**, służy do odczytu danych dla danego scenariusza.
+**CQRS** (Command Query Responsibility Segregation) to podejście polegające na oddzieleniu modyfikacji stanu od jego odczytu.  
+Można je zaimplementować nawet na jednej tabeli, ale znacznie więcej korzyści przynosi, gdy modyfikacja i odczyt są realizowane na osobnych tabelach lub nawet w osobnych bazach danych.
 
-Dzięki takiemu podejściu możemy stworzyć cały moduł [trackorder](src/main/java/pl/kopytka/trackorder) i zweryfikować swój pomysł bez konieczności wprowadzania zmian w strukturze bazy danych ani ingerencji w istniejący kod aplikacji.
+Dzięki temu możemy dostosować strukturę danych pod potrzeby odczytu tak, aby była jak najbardziej wydajna –  
+np. przechowywać tylko te dane, które są potrzebne do wyświetlania na ekranie, w jednej tabeli, nawet jeśli pochodzą one z wielu innych tabel.  
+Możemy także tworzyć inne indeksy niż w tabelach do modyfikacji stanu, a nawet używać innych technologii bazodanowych, np. **ElasticSearch**, który wspiera wyszukiwanie pełnotekstowe.
 
-Jeśli to rozwiązanie okaże się spełniać nasze kryteria, kolejnym krokiem będzie stworzenie osobnej tabeli do trackowania zamówienia oraz implementacja replikacji danych. To zostanie zrealizowane w kolejnym branchu.
+Na tym branchu znajduje się przykład replikowania danych do innego modułu w celu ich efektywnego odczytu.  
+Moduł `trackorder` to nowy moduł, który przechowuje tylko część informacji o zamówieniu – [TrackingOrderProjection](src/main/java/pl/kopytka/trackorder/TrackingOrderProjection.java).  
+Ta tabela mogłaby być rozszerzona o inne dane potrzebne do wyświetlania, np. pochodzące z modułu `delivery`.
+
+Podczas tworzenia klienta emitowany jest event `CustomerCreatedEvent`, który jest publikowany przez moduł `customer`.  
+Moduł `order` nasłuchuje na niego i replikuje potrzebne informacje o kliencie do swojej tabeli – [CustomerViewService](src/main/java/pl/kopytka/order/replication/CustomerViewService.java).  
+Dzięki temu moduł `order` staje się bardziej autonomiczny – przy tworzeniu zamówienia nie musi już pytać modułu `customer`, czy klient istnieje, tylko może to sprawdzić w ramach własnego modułu [CreateOrderHandler](src/main/java/pl/kopytka/order/command/create/CreateOrderHandler.java).
+
+Do replikacji danych został wykorzystany mechanizm `ApplicationEventPublisher` ze Springa.  
+Należy jednak pamiętać, że jego domyślna implementacja działa synchronicznie,  
+co oznacza, że czas modyfikacji stanu zostaje wydłużony o czas replikacji danych.
+
+W takich przypadkach często przechodzi się na komunikację asynchroniczną.  
+Najlepiej wówczas wykorzystać message broker (np. **Kafka**, **RabbitMQ**) – ale to już temat na kolejny branch 😄

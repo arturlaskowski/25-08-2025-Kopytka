@@ -18,7 +18,7 @@ class TrackOrderRestEndpoint {
 
     private final TrackingOrderQueryRepository trackingOrderQueryRepository;
 
-    // w przyszłości pewnie inny patch np  @GetMapping("order-tracking/{id}")
+    //Po dogadaniu z konsumentami należy zmienić na np. order-tracking/{id}
     @GetMapping("/api/orders/{orderId}/track")
     public TrackingOrderProjection trackOrder(@PathVariable UUID orderId) {
         return trackingOrderQueryRepository.findById(orderId)

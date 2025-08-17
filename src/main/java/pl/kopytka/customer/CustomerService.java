@@ -1,16 +1,19 @@
 package pl.kopytka.customer;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import pl.kopytka.common.domain.CustomerId;
+import pl.kopytka.common.event.CustomerChangedEvent;
 
 import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
-public class CustomerService implements CustomerFacade {
+public class CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     public CustomerDto getCustomer(UUID id) {
         CustomerId customerId = new CustomerId(id);
@@ -24,12 +27,9 @@ public class CustomerService implements CustomerFacade {
             throw new CustomerAlreadyExistsException(customerDto.email());
         }
         var customer = new Customer(customerDto.firstName(), customerDto.lastName(), customerDto.email());
-        return customerRepository.save(customer).getCustomerId();
-    }
+        var savedCustomer = customerRepository.save(customer);
 
-    @Override
-    public boolean existsById(UUID id) {
-        CustomerId customerId = new CustomerId(id);
-        return customerRepository.existsById(customerId);
+        eventPublisher.publishEvent(new CustomerChangedEvent(savedCustomer.getCustomerId().id(), savedCustomer.getEmail()));
+        return savedCustomer.getCustomerId();
     }
 }

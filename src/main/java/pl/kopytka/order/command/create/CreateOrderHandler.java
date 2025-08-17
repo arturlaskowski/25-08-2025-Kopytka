@@ -1,13 +1,15 @@
 package pl.kopytka.order.command.create;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import pl.kopytka.common.command.CommandHandler;
 import pl.kopytka.common.domain.CustomerId;
 import pl.kopytka.common.domain.Money;
-import pl.kopytka.customer.CustomerFacade;
+import pl.kopytka.common.event.OrderChangedEvent;
 import pl.kopytka.order.command.OrderRepository;
 import pl.kopytka.order.domain.Order;
+import pl.kopytka.order.replication.CustomerViewService;
 
 import java.util.UUID;
 
@@ -17,7 +19,8 @@ public class CreateOrderHandler implements CommandHandler<CreateOrderCommand> {
 
     private final OrderRepository orderRepository;
     private final OrderCreateCommandMapper orderCreateCommandMapper;
-    private final CustomerFacade customerFacade;
+    private final CustomerViewService customerViewService;
+    private final ApplicationEventPublisher eventPublisher;
 
     public void handle(CreateOrderCommand createOrderCommand) {
         validateCustomerExists(createOrderCommand.customerId());
@@ -30,10 +33,17 @@ public class CreateOrderHandler implements CommandHandler<CreateOrderCommand> {
                 items, orderAddress);
 
         orderRepository.save(order);
+
+        eventPublisher.publishEvent(new OrderChangedEvent(
+                order.getId().id(),
+                order.getCustomerId().id(),
+                order.getStatus().name(),
+                order.getPrice().amount(),
+                order.getCreateAt()));
     }
 
     private void validateCustomerExists(UUID customerId) {
-        if (!customerFacade.existsById(customerId)) {
+        if (!customerViewService.existsById(customerId)) {
             throw new InvalidOrderException(customerId);
         }
     }

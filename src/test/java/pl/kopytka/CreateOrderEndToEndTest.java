@@ -14,6 +14,7 @@ import pl.kopytka.order.command.create.InvalidOrderException;
 import pl.kopytka.order.domain.OrderStatus;
 import pl.kopytka.order.web.dto.CreateOrderRequest;
 import pl.kopytka.order.web.dto.GetOrderByIdQuery;
+import pl.kopytka.trackorder.TrackingOrderProjection;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -79,6 +80,18 @@ class CreateOrderEndToEndTest {
                     assertThat(getItem.quantity()).isEqualTo(postItem.quantity());
                     assertThat(getItem.totalPrice()).isEqualTo(postItem.totalPrice());
                 });
+
+        //when - track order
+        var orderId = location.getPath().split("/")[3];
+        var trackOrderUrl = "http://localhost:" + port + "/api/orders/" + orderId + "/track";
+        var trackOrderResponse = restTemplate.getForEntity(trackOrderUrl, TrackingOrderProjection.class);
+        assertThat(trackOrderResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        //then - verify tracking response
+        assertThat(trackOrderResponse.getBody()).isNotNull();
+        var trackingData = trackOrderResponse.getBody();
+        assertThat(trackingData.getOrderId()).isEqualTo(UUID.fromString(orderId));
+        assertThat(trackingData.getStatus()).isEqualTo(OrderStatus.PENDING.name());
     }
 
     @Test
