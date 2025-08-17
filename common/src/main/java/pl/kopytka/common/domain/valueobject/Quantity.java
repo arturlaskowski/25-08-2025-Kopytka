@@ -1,4 +1,4 @@
-package pl.kopytka.order.domain;
+package pl.kopytka.common.domain.valueobject;
 
 import jakarta.persistence.Embeddable;
 

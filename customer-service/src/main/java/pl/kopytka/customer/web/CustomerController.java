@@ -5,9 +5,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import pl.kopytka.common.web.dto.CustomerResponse;
 import pl.kopytka.customer.application.CustomerService;
 import pl.kopytka.customer.web.dto.CreateCustomerRequest;
-import pl.kopytka.customer.web.dto.CustomerResponse;
 
 import java.net.URI;
 import java.util.UUID;

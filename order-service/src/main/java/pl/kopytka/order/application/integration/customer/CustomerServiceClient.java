@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import pl.kopytka.order.domain.CustomerId;
+import pl.kopytka.common.domain.valueobject.CustomerId;
+import pl.kopytka.common.web.ServiceUnavailableException;
+import pl.kopytka.common.web.dto.CustomerResponse;
 
 @Component
 @RequiredArgsConstructor
@@ -33,7 +35,7 @@ public class CustomerServiceClient {
             throw new CustomerNotFoundException(customerId);
         } catch (Exception e) {
             log.error("Error while verifying customer existence: {}", e.getMessage(), e);
-            throw new CustomerServiceUnavailableException(customerId, e);
+            throw new ServiceUnavailableException("Customer", "verifying customer", e);
         }
     }
 }

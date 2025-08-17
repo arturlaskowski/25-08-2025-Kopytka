@@ -1,4 +1,4 @@
-package pl.kopytka.payment.web.exception;
+package pl.kopytka.common.web;
 
 import java.time.Instant;
 

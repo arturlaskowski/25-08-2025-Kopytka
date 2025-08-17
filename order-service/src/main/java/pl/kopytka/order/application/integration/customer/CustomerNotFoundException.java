@@ -1,6 +1,6 @@
 package pl.kopytka.order.application.integration.customer;
 
-import pl.kopytka.order.domain.CustomerId;
+import pl.kopytka.common.domain.valueobject.CustomerId;
 
 public class CustomerNotFoundException extends RuntimeException {
 

@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import pl.kopytka.common.domain.valueobject.Money;
+import pl.kopytka.common.domain.valueobject.ProductId;
+import pl.kopytka.common.domain.valueobject.Quantity;
 
 
 @IdClass(OrderItemId.class)

@@ -4,13 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.kopytka.common.domain.valueobject.CustomerId;
 import pl.kopytka.customer.application.dto.CustomerDto;
 import pl.kopytka.customer.application.exception.CustomerAlreadyExistsException;
 import pl.kopytka.customer.application.exception.CustomerNotFoundException;
 import pl.kopytka.customer.application.integration.payment.PaymentServiceClient;
 import pl.kopytka.customer.application.dto.CreateCustomerDto;
 import pl.kopytka.customer.domain.Customer;
-import pl.kopytka.customer.domain.CustomerId;
+
 
 import java.util.UUID;
 

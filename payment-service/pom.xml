@@ -11,6 +11,14 @@
 
     <artifactId>payment-service</artifactId>
 
+    <dependencies>
+        <dependency>
+            <groupId>pl.kopytka.now</groupId>
+            <artifactId>common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>

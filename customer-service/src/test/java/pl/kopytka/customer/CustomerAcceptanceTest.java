@@ -9,11 +9,10 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
+import pl.kopytka.common.web.ErrorResponse;
 import pl.kopytka.customer.application.CustomerService;
-import pl.kopytka.customer.application.dto.CustomerDto;
 import pl.kopytka.customer.application.dto.CreateCustomerDto;
-import pl.kopytka.customer.web.dto.CreateCustomerRequest;
-import pl.kopytka.customer.web.exception.ErrorResponse;
+import pl.kopytka.customer.application.dto.CustomerDto;
 
 import java.util.UUID;
 
@@ -86,10 +85,10 @@ class CustomerAcceptanceTest {
             then Customer is added and HTTP 201 status received""")
     void givenRequestForCreatingCustomer_whenRequestIsSent_thenCustomerAddedAndHttp201() {
         //given
-        var createCustomerRequest = new CreateCustomerRequest("Marianek", "Paździoch", "mario@gemail.com");
+        var createCustomerDto = new CreateCustomerDto("Marianek", "Paździoch", "mario@gemail.com");
 
         //when
-        ResponseEntity<UUID> postResponse = testRestTemplate.postForEntity(getBaseCustomersUrl(), createCustomerRequest, UUID.class);
+        ResponseEntity<UUID> postResponse = testRestTemplate.postForEntity(getBaseCustomersUrl(), createCustomerDto, UUID.class);
 
         //then
         assertThat(postResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -98,9 +97,9 @@ class CustomerAcceptanceTest {
         assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         assertThat(getResponse.getBody())
-                .hasFieldOrPropertyWithValue("firstName", createCustomerRequest.firstName())
-                .hasFieldOrPropertyWithValue("lastName", createCustomerRequest.lastName())
-                .hasFieldOrPropertyWithValue("email", createCustomerRequest.email());
+                .hasFieldOrPropertyWithValue("firstName", createCustomerDto.firstName())
+                .hasFieldOrPropertyWithValue("lastName", createCustomerDto.lastName())
+                .hasFieldOrPropertyWithValue("email", createCustomerDto.email());
     }
 
     @Test
@@ -113,10 +112,10 @@ class CustomerAcceptanceTest {
         String email = "waldek12@gmail.com";
         customerService.addCustomer(new CreateCustomerDto("Waldemar", "Kiepski", email));
 
-        var createCustomerRequest = new CreateCustomerRequest("Walduś", "Boczek", email);
+        var createCustomerDto = new CreateCustomerDto("Walduś", "Boczek", email);
 
         //when
-        ResponseEntity<ErrorResponse> response = testRestTemplate.postForEntity(getBaseCustomersUrl(), createCustomerRequest, ErrorResponse.class);
+        ResponseEntity<ErrorResponse> response = testRestTemplate.postForEntity(getBaseCustomersUrl(), createCustomerDto, ErrorResponse.class);
 
         //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);

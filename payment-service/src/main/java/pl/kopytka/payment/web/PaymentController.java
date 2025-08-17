@@ -7,12 +7,12 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import pl.kopytka.common.web.dto.MakePaymentRequest;
 import pl.kopytka.payment.application.PaymentApplicationService;
 import pl.kopytka.payment.application.dto.CancelPaymentCommand;
 import pl.kopytka.payment.application.dto.MakePaymentCommand;
-import pl.kopytka.payment.application.dto.PaymentResult;
+import pl.kopytka.common.web.dto.PaymentResult;
 import pl.kopytka.payment.web.dto.CancelPaymentRequest;
-import pl.kopytka.payment.web.dto.MakePaymentRequest;
 
 @RestController
 @RequestMapping("/api/payments")

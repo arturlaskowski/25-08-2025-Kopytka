@@ -1,6 +1,6 @@
 package pl.kopytka.payment.application.exception;
 
-import pl.kopytka.payment.domain.CustomerId;
+import pl.kopytka.common.domain.valueobject.CustomerId;
 
 public class WalletAlreadyExistsException extends RuntimeException {
 

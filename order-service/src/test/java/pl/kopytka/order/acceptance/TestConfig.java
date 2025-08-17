@@ -6,9 +6,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import pl.kopytka.order.application.integration.customer.CustomerServiceClient;
 import pl.kopytka.order.application.integration.payment.PaymentServiceClient;
-import pl.kopytka.order.domain.CustomerId;
-import pl.kopytka.order.domain.Money;
-import pl.kopytka.order.domain.OrderId;
+import pl.kopytka.common.domain.valueobject.CustomerId;
+import pl.kopytka.common.domain.valueobject.Money;
+import pl.kopytka.common.domain.valueobject.OrderId;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;

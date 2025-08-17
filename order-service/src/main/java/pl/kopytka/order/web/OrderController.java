@@ -10,7 +10,7 @@ import pl.kopytka.order.application.dto.CreateBasketItemDto;
 import pl.kopytka.order.application.dto.CreateOrderAddressDto;
 import pl.kopytka.order.application.dto.CreateOrderCommand;
 import pl.kopytka.order.application.dto.OrderQuery;
-import pl.kopytka.order.domain.OrderId;
+import pl.kopytka.common.domain.valueobject.OrderId;
 import pl.kopytka.order.web.dto.CreateOrderRequest;
 
 import java.net.URI;

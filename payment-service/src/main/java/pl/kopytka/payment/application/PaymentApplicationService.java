@@ -4,12 +4,18 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.kopytka.common.domain.valueobject.CustomerId;
+import pl.kopytka.common.domain.valueobject.Money;
+import pl.kopytka.common.domain.valueobject.OrderId;
+import pl.kopytka.common.web.dto.PaymentResult;
 import pl.kopytka.payment.application.dto.CancelPaymentCommand;
 import pl.kopytka.payment.application.dto.MakePaymentCommand;
-import pl.kopytka.payment.application.dto.PaymentResult;
 import pl.kopytka.payment.application.exception.PaymentNotFoundException;
 import pl.kopytka.payment.application.exception.WalletNotFoundException;
-import pl.kopytka.payment.domain.*;
+import pl.kopytka.payment.domain.Payment;
+import pl.kopytka.payment.domain.PaymentDomainException;
+import pl.kopytka.payment.domain.PaymentDomainService;
+import pl.kopytka.payment.domain.Wallet;
 
 @Service
 @RequiredArgsConstructor
@@ -29,13 +35,13 @@ public class PaymentApplicationService {
         if (paymentRepository.findByOrderId(orderId).isPresent()) {
             throw new PaymentDomainException("Payment already exists");
         }
-
-        Wallet wallet = walletRepository.findByCustomerId(new CustomerId(command.customerId()))
-                .orElseThrow(() -> new WalletNotFoundException("Wallet not found for customer: " + command.customerId()));
+        var customerId = new CustomerId(command.customerId());
+        Wallet wallet = walletRepository.findByCustomerId(customerId)
+                .orElseThrow(() -> new WalletNotFoundException(customerId));
 
         Payment payment = new Payment(
                 orderId,
-                new CustomerId(command.customerId()),
+                customerId,
                 new Money(command.price())
         );
 
@@ -60,7 +66,7 @@ public class PaymentApplicationService {
         }
 
         Wallet wallet = walletRepository.findByCustomerId(requestCustomerId)
-                .orElseThrow(() -> new WalletNotFoundException("Wallet not found for customer: " + command.customerId()));
+                .orElseThrow(() -> new WalletNotFoundException(requestCustomerId));
 
         paymentDomainService.cancelPayment(payment, wallet);
 

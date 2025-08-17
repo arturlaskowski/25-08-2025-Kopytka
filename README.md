@@ -1,25 +1,10 @@
-# Branch startowy dla architektury rozproszonej z komunikacją synchroniczną
+# Współdzielona część w architekturze rozproszonej
 
-Aktualnie mamy wiele problemów i wyzwań, które pojawiły się po przejściu na architekturę rozproszoną.  
-Waszym zadaniem jest znaleźć i wypisać listę problemów (wyzwań), które wynikają z faktu, że system **kopytka** jest teraz rozproszony i będzie skalowany.
+Często potrzebujemy modułu dostarczanego do wszystkich mikroserwisów, aby zapewnić jednolite podejście do wspólnych aspektów, takich jak konfiguracje czy narzędzia.  
+Taki moduł jest zwykle udostępniany jako biblioteka, która jest wersjonowana i wydawana niezależnie.
 
-## Założenia
-- Każdy mikroserwis posiada własną, fizyczną bazę danych.
-- Można pominąć kwestie związane z uwierzytelnianiem i autoryzacją.
+Warto pamiętać, by przy publikacji nowych wersji współdzielonej biblioteki:
+- Informować konsumentów o zmianach (np. przez release notes).
+- Unikać breaking changes, które mogłyby zepsuć cały system, ponieważ mikroserwisy mogą aktualizować bibliotekę w różnym tempie.
 
-## Jak mikroserwisy się ze sobą komunikują?
-
-1. **Tworzenie klienta**
-    - `customer-service`: `POST /api/customers`
-    - Wysyłany jest request do **payment-service**, aby stworzyć portfel:
-        - `POST /api/wallets`
-
-2. **Tworzenie zamówienia**
-    - `order-service`: `POST /api/orders`
-    - Wysyłany jest request do **customer-service**, aby sprawdzić, czy klient istnieje:
-        - `GET /api/customers/{id}`
-
-3. **Płatność za zamówienie**
-    - `order-service`: `POST /api/orders/pay`
-    - Wysyłany jest request do **payment-service**, aby wykonać płatność:
-        - `POST /api/payments/process`
+Przykład takiej współdzielonej biblioteki to [common](common).

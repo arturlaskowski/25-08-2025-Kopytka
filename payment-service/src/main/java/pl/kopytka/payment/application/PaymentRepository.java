@@ -4,7 +4,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import pl.kopytka.payment.domain.OrderId;
+import pl.kopytka.common.domain.valueobject.OrderId;
 import pl.kopytka.payment.domain.Payment;
 import pl.kopytka.payment.domain.PaymentId;
 import pl.kopytka.payment.domain.PaymentStatus;

@@ -9,12 +9,12 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ContextConfiguration;
+import pl.kopytka.common.web.ErrorResponse;
 import pl.kopytka.order.application.dto.OrderQuery;
 import pl.kopytka.order.domain.OrderStatus;
 import pl.kopytka.order.web.dto.BasketItemRequest;
 import pl.kopytka.order.web.dto.CreateOrderRequest;
 import pl.kopytka.order.web.dto.OrderAddressRequest;
-import pl.kopytka.order.web.exception.ErrorResponse;
 
 import java.math.BigDecimal;
 import java.net.URI;

@@ -1,4 +1,4 @@
-package pl.kopytka.order.domain;
+package pl.kopytka.common.domain.valueobject;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.Embeddable;

@@ -1,6 +1,9 @@
 package pl.kopytka.payment.domain.entity;
 
 import org.junit.jupiter.api.Test;
+import pl.kopytka.common.domain.valueobject.CustomerId;
+import pl.kopytka.common.domain.valueobject.Money;
+import pl.kopytka.common.domain.valueobject.OrderId;
 import pl.kopytka.payment.domain.*;
 
 import java.math.BigDecimal;

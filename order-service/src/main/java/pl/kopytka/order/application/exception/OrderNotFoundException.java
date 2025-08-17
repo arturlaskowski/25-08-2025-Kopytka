@@ -1,6 +1,6 @@
 package pl.kopytka.order.application.exception;
 
-import pl.kopytka.order.domain.OrderId;
+import pl.kopytka.common.domain.valueobject.OrderId;
 
 public class OrderNotFoundException extends RuntimeException {
 

@@ -5,12 +5,15 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import pl.kopytka.common.domain.valueobject.*;
 import pl.kopytka.order.application.dto.CreateOrderCommand;
 import pl.kopytka.order.application.dto.OrderQuery;
 import pl.kopytka.order.application.exception.OrderNotFoundException;
 import pl.kopytka.order.application.integration.customer.CustomerServiceClient;
 import pl.kopytka.order.application.integration.payment.PaymentServiceClient;
-import pl.kopytka.order.domain.*;
+import pl.kopytka.order.domain.Order;
+import pl.kopytka.order.domain.OrderAddress;
+import pl.kopytka.order.domain.OrderItem;
 
 import java.util.Set;
 import java.util.stream.Collectors;

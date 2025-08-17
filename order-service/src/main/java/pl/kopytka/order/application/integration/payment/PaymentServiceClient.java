@@ -7,9 +7,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
-import pl.kopytka.order.domain.CustomerId;
-import pl.kopytka.order.domain.Money;
-import pl.kopytka.order.domain.OrderId;
+import pl.kopytka.common.domain.valueobject.CustomerId;
+import pl.kopytka.common.domain.valueobject.Money;
+import pl.kopytka.common.domain.valueobject.OrderId;
+import pl.kopytka.common.web.ServiceUnavailableException;
+import pl.kopytka.common.web.dto.MakePaymentRequest;
+import pl.kopytka.common.web.dto.PaymentResult;
 
 @Component
 @RequiredArgsConstructor
@@ -33,13 +36,13 @@ public class PaymentServiceClient {
                     amount.amount()
             );
 
-            ResponseEntity<PaymentResponse> response = restTemplate.postForEntity(url, request, PaymentResponse.class);
+            ResponseEntity<PaymentResult> response = restTemplate.postForEntity(url, request, PaymentResult.class);
 
             // Check for null response body first
             if (response.getBody() == null) {
                 log.error("Payment service returned empty response body");
-                throw new PaymentServiceUnavailableException(orderId, customerId, amount,
-                        new RuntimeException("Payment service returned empty response"));
+                throw new PaymentProcessingFailedException(orderId, customerId, amount,
+                        "Payment service returned empty response");
             }
 
             // Handle payment failure
@@ -54,16 +57,16 @@ public class PaymentServiceClient {
         } catch (HttpClientErrorException e) {
             log.error("Payment processing failed with status: {}, body: {}",
                     e.getStatusCode(), e.getResponseBodyAsString());
-            throw new PaymentServiceUnavailableException(orderId, customerId, amount, e);
+            throw new ServiceUnavailableException("Payment", "processing payment", e);
 
         } catch (Exception e) {
             if (e instanceof PaymentProcessingFailedException ||
-                    e instanceof PaymentServiceUnavailableException) {
+                    e instanceof ServiceUnavailableException) {
                 throw e;
             }
 
             log.error("Error while processing payment: {}", e.getMessage(), e);
-            throw new PaymentServiceUnavailableException(orderId, customerId, amount, e);
+            throw new ServiceUnavailableException("Payment", "processing payment", e);
         }
     }
 }

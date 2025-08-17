@@ -1,8 +1,8 @@
 package pl.kopytka.order.application.integration.payment;
 
-import pl.kopytka.order.domain.CustomerId;
-import pl.kopytka.order.domain.Money;
-import pl.kopytka.order.domain.OrderId;
+import pl.kopytka.common.domain.valueobject.CustomerId;
+import pl.kopytka.common.domain.valueobject.Money;
+import pl.kopytka.common.domain.valueobject.OrderId;
 
 public class PaymentProcessingFailedException extends RuntimeException {
 

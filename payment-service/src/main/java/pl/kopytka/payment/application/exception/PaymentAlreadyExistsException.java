@@ -1,6 +1,7 @@
 package pl.kopytka.payment.application.exception;
 
-import pl.kopytka.payment.domain.OrderId;
+
+import pl.kopytka.common.domain.valueobject.OrderId;
 
 public class PaymentAlreadyExistsException extends RuntimeException {
 

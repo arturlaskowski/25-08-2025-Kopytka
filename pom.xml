@@ -8,6 +8,7 @@
     <artifactId>kopytka-now</artifactId>
     <version>1.0-SNAPSHOT</version>
     <modules>
+        <module>common</module>
         <module>order-service</module>
         <module>payment-service</module>
         <module>customer-service</module>

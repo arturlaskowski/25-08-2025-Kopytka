@@ -2,6 +2,9 @@ package pl.kopytka.payment.domain;
 
 import jakarta.persistence.*;
 import lombok.Getter;
+import pl.kopytka.common.domain.valueobject.CustomerId;
+import pl.kopytka.common.domain.valueobject.Money;
+import pl.kopytka.common.domain.valueobject.OrderId;
 
 import java.time.Instant;
 

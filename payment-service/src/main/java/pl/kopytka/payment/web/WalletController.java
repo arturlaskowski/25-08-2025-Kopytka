@@ -5,12 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import pl.kopytka.common.domain.valueobject.Money;
+import pl.kopytka.common.web.dto.CreateWalletRequest;
 import pl.kopytka.payment.application.WalletService;
-import pl.kopytka.payment.domain.CustomerId;
-import pl.kopytka.payment.domain.Money;
+import pl.kopytka.common.domain.valueobject.CustomerId;
 import pl.kopytka.payment.domain.WalletId;
 import pl.kopytka.payment.web.dto.AddFundsRequest;
-import pl.kopytka.payment.web.dto.CreateWalletRequest;
 import pl.kopytka.payment.web.dto.WalletDto;
 
 import java.net.URI;
