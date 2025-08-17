@@ -6,8 +6,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import pl.kopytka.common.web.ErrorResponse;
-import pl.kopytka.order.application.OrderNotFoundException;
-import pl.kopytka.order.application.command.InvalidOrderException;
+import pl.kopytka.order.command.OrderNotFoundException;
+import pl.kopytka.order.command.create.InvalidOrderException;
 import pl.kopytka.order.domain.OrderDomainException;
 
 @RestControllerAdvice

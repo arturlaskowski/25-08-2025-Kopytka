@@ -1,4 +1,4 @@
-package pl.kopytka.order.application.query;
+package pl.kopytka.order.query;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

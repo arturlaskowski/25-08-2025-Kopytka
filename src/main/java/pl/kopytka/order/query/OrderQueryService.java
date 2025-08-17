@@ -1,11 +1,11 @@
-package pl.kopytka.order.application.query;
+package pl.kopytka.order.query;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import pl.kopytka.common.domain.OrderId;
-import pl.kopytka.order.application.OrderNotFoundException;
+import pl.kopytka.order.command.OrderNotFoundException;
 import pl.kopytka.order.domain.Order;
 import pl.kopytka.order.domain.OrderStatus;
 import pl.kopytka.order.web.dto.GetOrderByIdQuery;

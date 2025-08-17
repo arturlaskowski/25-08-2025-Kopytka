@@ -1,4 +1,4 @@
-package pl.kopytka.order.application.command.dto;
+package pl.kopytka.order.command.create;
 
 import jakarta.validation.constraints.NotBlank;
 

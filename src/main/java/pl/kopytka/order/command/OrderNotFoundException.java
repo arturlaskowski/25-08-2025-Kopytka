@@ -1,4 +1,4 @@
-package pl.kopytka.order.application;
+package pl.kopytka.order.command;
 
 import pl.kopytka.common.domain.OrderId;
 

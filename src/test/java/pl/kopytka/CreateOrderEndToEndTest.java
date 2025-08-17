@@ -10,11 +10,9 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import pl.kopytka.common.ExceptionTestUtils;
 import pl.kopytka.customer.CreateCustomerDto;
-import pl.kopytka.order.application.command.InvalidOrderException;
-import pl.kopytka.order.application.command.dto.CreateOrderAddressDto;
-import pl.kopytka.order.application.command.dto.CreateOrderCommand;
-import pl.kopytka.order.application.command.dto.CreateOrderItemDto;
+import pl.kopytka.order.command.create.InvalidOrderException;
 import pl.kopytka.order.domain.OrderStatus;
+import pl.kopytka.order.web.dto.CreateOrderRequest;
 import pl.kopytka.order.web.dto.GetOrderByIdQuery;
 
 import java.math.BigDecimal;
@@ -48,8 +46,8 @@ class CreateOrderEndToEndTest {
         var customerId = postCustomerResponse.getHeaders().getLocation().getPath().split("/")[3];
 
         //when - create order
-        var createOrderDto = createOrderDto(UUID.fromString(customerId));
-        var postOrderResponse = restTemplate.postForEntity(getBaseOrdersUrl(), createOrderDto, Void.class);
+        var createOrderRequest = createOrderRequest(UUID.fromString(customerId));
+        var postOrderResponse = restTemplate.postForEntity(getBaseOrdersUrl(), createOrderRequest, Void.class);
         assertThat(postOrderResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(postOrderResponse.getHeaders().getLocation()).isNotNull();
 
@@ -65,17 +63,17 @@ class CreateOrderEndToEndTest {
         var orderResponse = getOrderResponse.getBody();
         assertThat(orderResponse)
                 .hasNoNullFieldsOrProperties()
-                .hasFieldOrPropertyWithValue("customerId", createOrderDto.customerId())
-                .hasFieldOrPropertyWithValue("price", createOrderDto.price())
+                .hasFieldOrPropertyWithValue("customerId", createOrderRequest.customerId())
+                .hasFieldOrPropertyWithValue("price", createOrderRequest.price())
                 .hasFieldOrPropertyWithValue("status", OrderStatus.PENDING)
                 .extracting(GetOrderByIdQuery::address)
-                .hasFieldOrPropertyWithValue("street", createOrderDto.deliveryAddress().street())
-                .hasFieldOrPropertyWithValue("postCode", createOrderDto.deliveryAddress().postCode())
-                .hasFieldOrPropertyWithValue("city", createOrderDto.deliveryAddress().city())
-                .hasFieldOrPropertyWithValue("houseNo", createOrderDto.deliveryAddress().houseNo());
+                .hasFieldOrPropertyWithValue("street", createOrderRequest.deliveryAddress().street())
+                .hasFieldOrPropertyWithValue("postCode", createOrderRequest.deliveryAddress().postCode())
+                .hasFieldOrPropertyWithValue("city", createOrderRequest.deliveryAddress().city())
+                .hasFieldOrPropertyWithValue("houseNo", createOrderRequest.deliveryAddress().houseNo());
 
-        assertThat(orderResponse.basketItems()).hasSize(createOrderDto.basketItems().size())
-                .zipSatisfy(createOrderDto.basketItems(), (getItem, postItem) -> {
+        assertThat(orderResponse.basketItems()).hasSize(createOrderRequest.basketItems().size())
+                .zipSatisfy(createOrderRequest.basketItems(), (getItem, postItem) -> {
                     assertThat(getItem.productId()).isEqualTo(postItem.productId());
                     assertThat(getItem.price()).isEqualTo(postItem.price());
                     assertThat(getItem.quantity()).isEqualTo(postItem.quantity());
@@ -91,7 +89,7 @@ class CreateOrderEndToEndTest {
     void givenRequestToAddOrderForNotExistingCustomer_whenRequestIsSent_thenOrderNotSavedAndHttp400() {
         //when - create order
         var notExistingCustomerId = UUID.randomUUID();
-        var createOrderDto = createOrderDto(notExistingCustomerId);
+        var createOrderDto = createOrderRequest(notExistingCustomerId);
         var postOrderResponse = restTemplate.postForEntity(getBaseOrdersUrl(), createOrderDto, Object.class);
 
         //then
@@ -100,11 +98,11 @@ class CreateOrderEndToEndTest {
                 InvalidOrderException.createExceptionMessage(notExistingCustomerId));
     }
 
-    private CreateOrderCommand createOrderDto(UUID customerId) {
-        var items = List.of(new CreateOrderItemDto(UUID.randomUUID(), 2, new BigDecimal("10.00"), new BigDecimal("20.00")),
-                new CreateOrderItemDto(UUID.randomUUID(), 1, new BigDecimal("34.56"), new BigDecimal("34.56")));
-        var address = new CreateOrderAddressDto("Małysza", "94-000", "Adasiowo", "12");
-        return new CreateOrderCommand(customerId, new BigDecimal("54.56"), items, address);
+    private CreateOrderRequest createOrderRequest(UUID customerId) {
+        var items = List.of(new CreateOrderRequest.OrderItemRequest(UUID.randomUUID(), 2, new BigDecimal("10.00"), new BigDecimal("20.00")),
+                new CreateOrderRequest.OrderItemRequest(UUID.randomUUID(), 1, new BigDecimal("34.56"), new BigDecimal("34.56")));
+        var address = new CreateOrderRequest.OrderAddressRequest("Małysza", "94-000", "Adasiowo", "12");
+        return new CreateOrderRequest(customerId, new BigDecimal("54.56"), items, address);
     }
 
     private String getBaseOrdersUrl() {

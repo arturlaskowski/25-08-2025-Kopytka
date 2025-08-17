@@ -12,17 +12,16 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.util.UriComponentsBuilder;
 import pl.kopytka.common.domain.CustomerId;
 import pl.kopytka.common.domain.Money;
 import pl.kopytka.common.domain.OrderId;
 import pl.kopytka.common.web.ErrorResponse;
-import pl.kopytka.order.application.command.OrderRepository;
-import pl.kopytka.order.application.command.dto.CreateOrderAddressDto;
-import pl.kopytka.order.application.command.dto.CreateOrderCommand;
-import pl.kopytka.order.application.command.dto.CreateOrderItemDto;
+import pl.kopytka.order.command.OrderRepository;
 import pl.kopytka.order.domain.Order;
 import pl.kopytka.order.domain.OrderStatus;
 import pl.kopytka.order.domain.Quantity;
+import pl.kopytka.order.web.dto.CreateOrderRequest;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -53,7 +52,7 @@ class OrderAcceptanceTest {
             then save order and HTTP 201 status received""")
     void givenRequestToAddOrderForExistingCustomer_whenRequestIsSent_thenOrderSavedAndHttp201() {
         // given
-        var createOrderDto = createOrderDto();
+        var createOrderDto = createOrderCommand();
 
         // when
         ResponseEntity<Void> response = restTemplate.postForEntity(getBaseUrl(), createOrderDto, Void.class);
@@ -62,8 +61,10 @@ class OrderAcceptanceTest {
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         var location = response.getHeaders().getLocation();
         assertThat(location).isNotNull();
-        var orderId = location.getPath().split("/")[3];
-        var savedOrder = orderRepository.findById(new OrderId(UUID.fromString(orderId))).orElseThrow();
+        var orderId = UUID.fromString(UriComponentsBuilder.fromUri(response.getHeaders().getLocation()).build()
+                .getPathSegments().getLast());
+
+        var savedOrder = orderRepository.findById(new OrderId(orderId)).orElseThrow();
         assertThat(savedOrder)
                 .hasNoNullFieldsOrProperties()
                 .hasFieldOrPropertyWithValue("customerId", new CustomerId(createOrderDto.customerId()))
@@ -91,7 +92,7 @@ class OrderAcceptanceTest {
             then HTTP 400 status received and error message returned""")
     void givenRequestToAddOrderForNonExistingCustomer_whenRequestIsSent_thenHttp400AndErrorMessage() {
         // given
-        var createOrderDto = createOrderDto();
+        var createOrderDto = createOrderCommand();
         stubCustomerFacade.setCustomerExists(false);
 
         // when
@@ -114,11 +115,11 @@ class OrderAcceptanceTest {
         stubCustomerFacade.setCustomerExists(true);
     }
 
-    private CreateOrderCommand createOrderDto() {
-        var items = List.of(new CreateOrderItemDto(UUID.randomUUID(), 2, new BigDecimal("10.00"), new BigDecimal("20.00")),
-                new CreateOrderItemDto(UUID.randomUUID(), 1, new BigDecimal("34.56"), new BigDecimal("34.56")));
-        var address = new CreateOrderAddressDto("Małysza", "94-000", "Adasiowo", "12");
-        return new CreateOrderCommand(UUID.randomUUID(), new BigDecimal("54.56"), items, address);
+    private CreateOrderRequest createOrderCommand() {
+        var items = List.of(new CreateOrderRequest.OrderItemRequest(UUID.randomUUID(), 2, new BigDecimal("10.00"), new BigDecimal("20.00")),
+                new CreateOrderRequest.OrderItemRequest(UUID.randomUUID(), 1, new BigDecimal("34.56"), new BigDecimal("34.56")));
+        var address = new CreateOrderRequest.OrderAddressRequest("Małysza", "94-000", "Adasiowo", "12");
+        return new CreateOrderRequest(UUID.randomUUID(), new BigDecimal("54.56"), items, address);
     }
 
     private String getBaseUrl() {

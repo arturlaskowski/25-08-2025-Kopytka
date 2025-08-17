@@ -1,4 +1,4 @@
-package pl.kopytka.order.application.command;
+package pl.kopytka.order.command;
 
 import org.springframework.data.repository.CrudRepository;
 import pl.kopytka.common.domain.OrderId;

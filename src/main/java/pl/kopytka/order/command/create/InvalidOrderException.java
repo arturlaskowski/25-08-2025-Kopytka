@@ -1,4 +1,4 @@
-package pl.kopytka.order.application.command;
+package pl.kopytka.order.command.create;
 
 import java.util.UUID;
 

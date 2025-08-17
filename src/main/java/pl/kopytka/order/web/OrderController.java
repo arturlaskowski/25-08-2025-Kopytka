@@ -9,10 +9,12 @@ import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import pl.kopytka.common.command.CommandHandlerExecutor;
 import pl.kopytka.common.domain.OrderId;
-import pl.kopytka.order.application.command.OrderCommandService;
-import pl.kopytka.order.application.query.OrderQueryService;
+import pl.kopytka.order.command.approve.ApproveOrderCommand;
+import pl.kopytka.order.command.pay.PayOrderCommand;
 import pl.kopytka.order.domain.OrderStatus;
+import pl.kopytka.order.query.OrderQueryService;
 import pl.kopytka.order.web.dto.CreateOrderRequest;
 import pl.kopytka.order.web.dto.GetOrderByIdQuery;
 import pl.kopytka.order.web.dto.OrderPageQuery;
@@ -26,33 +28,38 @@ import java.util.UUID;
 @RequiredArgsConstructor
 class OrderController {
 
-    private final OrderCommandService orderCommandService;
+    private final CommandHandlerExecutor commandHandlerExecutor;
     private final OrderApiMapper orderApiMapper;
 
     private final OrderQueryService orderQueryService;
 
     @PostMapping
     public ResponseEntity<Void> createOrder(@RequestBody @Valid CreateOrderRequest createOrderRequest) {
-        var createOrderDto = orderApiMapper.toCreateOrderDto(createOrderRequest);
-        var orderId = orderCommandService.createOrder(createOrderDto);
+        var orderId = OrderId.newOne();
+        var createOrderCommand = orderApiMapper.toCreateOrderCommand(orderId, createOrderRequest);
+
+        commandHandlerExecutor.execute(createOrderCommand);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}")
                 .buildAndExpand(orderId.id())
                 .toUri();
-
         return ResponseEntity.created(location).build();
     }
 
-    @PostMapping("/{orderId}/pay")
-    public ResponseEntity<Void> payOrder(@PathVariable UUID orderId) {
-        orderCommandService.payOrder(new OrderId(orderId));
+    @PostMapping("/{id}/pay")
+    public ResponseEntity<Void> payOrder(@PathVariable UUID id) {
+        PayOrderCommand payOrderCommand = new PayOrderCommand(new OrderId(id));
+        commandHandlerExecutor.execute(payOrderCommand);
+
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/{orderId}/approve")
-    public ResponseEntity<Void> approveOrder(@PathVariable UUID orderId) {
-        orderCommandService.approveOrder(new OrderId(orderId));
+    @PostMapping("/{id}/approve")
+    public ResponseEntity<Void> approveOrder(@PathVariable UUID id) {
+        ApproveOrderCommand approveOrderCommand = new ApproveOrderCommand(new OrderId(id));
+        commandHandlerExecutor.execute(approveOrderCommand);
+
         return ResponseEntity.noContent().build();
     }
 

@@ -4,6 +4,7 @@ package pl.kopytka.order.domain;
 import org.junit.jupiter.api.Test;
 import pl.kopytka.common.domain.CustomerId;
 import pl.kopytka.common.domain.Money;
+import pl.kopytka.common.domain.OrderId;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -18,6 +19,7 @@ class OrderTest {
     @Test
     void shouldCreateOrderWithValidDetails() {
         //given
+        var orderId = OrderId.newOne();
         var customerId = CustomerId.newOne();
         var item = new OrderItem(UUID.randomUUID(), new Money(new BigDecimal("10.00")), new Quantity(2), new Money(new BigDecimal("20.00")));
         var item2 = new OrderItem(UUID.randomUUID(), new Money(new BigDecimal("15.50")), new Quantity(3), new Money(new BigDecimal("46.50")));
@@ -25,10 +27,11 @@ class OrderTest {
         var beforeCreation = Instant.now();
 
         //when
-        var order = new Order(customerId, new Money(new BigDecimal("66.50")), List.of(item, item2), address);
+        var order = new Order(orderId, customerId, new Money(new BigDecimal("66.50")), List.of(item, item2), address);
         var afterCreation = Instant.now();
 
         // then
+        assertThat(order.getId()).isEqualTo(orderId);
         assertThat(order.getCustomerId()).isEqualTo(customerId);
         assertThat(order.getPrice()).isEqualTo(new Money(new BigDecimal("66.50")));
         assertThat(order.getItems()).containsExactlyInAnyOrder(item, item2);
@@ -47,6 +50,7 @@ class OrderTest {
     @Test
     void shouldThrowExceptionWhenOrderPriceDoesNotMatchItemTotals() {
         //given
+        var orderId = OrderId.newOne();
         var customerId = CustomerId.newOne();
         var sumOfOrderItemsPrice = new Money(new BigDecimal("20.00"));
         var items = List.of(new OrderItem(UUID.randomUUID(), new Money(new BigDecimal("10.00")), new Quantity(2), sumOfOrderItemsPrice));
@@ -55,7 +59,7 @@ class OrderTest {
 
         //when
         var orderDomainException = assertThrows(OrderDomainException.class,
-                () -> new Order(customerId, differentPriceThanSumOrderItems, items, address));
+                () -> new Order(orderId, customerId, differentPriceThanSumOrderItems, items, address));
 
         //then
         assertEquals("Total order price: " + differentPriceThanSumOrderItems +
@@ -131,13 +135,14 @@ class OrderTest {
     @Test
     void shouldInitializeOrderItemsCorrectly() {
         //given
+        var orderId = OrderId.newOne();
         var customerId = CustomerId.newOne();
         var item1 = new OrderItem(UUID.randomUUID(), new Money(new BigDecimal("10.00")), new Quantity(1), new Money(new BigDecimal("10.00")));
         var item2 = new OrderItem(UUID.randomUUID(), new Money(new BigDecimal("15.00")), new Quantity(2), new Money(new BigDecimal("30.00")));
         var address = new OrderAddress("Street", "12345", "City", "1A");
 
         //when
-        var order = new Order(customerId, new Money(new BigDecimal("40.00")), List.of(item1, item2), address);
+        var order = new Order(orderId, customerId, new Money(new BigDecimal("40.00")), List.of(item1, item2), address);
 
         //then
         assertEquals(order, item1.getOrder());
@@ -147,9 +152,10 @@ class OrderTest {
     }
 
     private Order createOrder() {
+        var orderId = OrderId.newOne();
         var customerId = CustomerId.newOne();
         var item = new OrderItem(UUID.randomUUID(), new Money(new BigDecimal("10.00")), new Quantity(2), new Money(new BigDecimal("20.00")));
         var address = new OrderAddress("Boczka", "12345", "Arnoldowo", "1A");
-        return new Order(customerId, new Money(new BigDecimal("20.00")), List.of(item), address);
+        return new Order(orderId, customerId, new Money(new BigDecimal("20.00")), List.of(item), address);
     }
 }
