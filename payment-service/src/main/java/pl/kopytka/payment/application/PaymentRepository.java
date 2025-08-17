@@ -7,9 +7,7 @@ import org.springframework.stereotype.Repository;
 import pl.kopytka.common.domain.valueobject.OrderId;
 import pl.kopytka.payment.domain.Payment;
 import pl.kopytka.payment.domain.PaymentId;
-import pl.kopytka.payment.domain.PaymentStatus;
 
-import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -17,7 +15,4 @@ public interface PaymentRepository extends JpaRepository<Payment, PaymentId> {
 
     @Query("SELECT p FROM payments p WHERE p.orderId = :orderId")
     Optional<Payment> findByOrderId(@Param("orderId") OrderId orderId);
-    
-    @Query("SELECT p FROM payments p WHERE p.status = :status")
-    List<Payment> findByStatus(@Param("status") PaymentStatus status);
 }

@@ -3,16 +3,14 @@ package pl.kopytka.payment.web;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pl.kopytka.payment.application.PaymentApplicationService;
 import pl.kopytka.payment.application.dto.CancelPaymentCommand;
 import pl.kopytka.payment.application.dto.MakePaymentCommand;
-import pl.kopytka.payment.application.dto.PaymentResult;
-import pl.kopytka.payment.web.dto.CancelPaymentRequest;
 import pl.kopytka.payment.web.dto.MakePaymentRequest;
+import pl.kopytka.payment.web.dto.PaymentResultResponse;
+
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/payments")
@@ -22,7 +20,7 @@ public class PaymentController {
     private final PaymentApplicationService paymentApplicationService;
 
     @PostMapping("/process")
-    public ResponseEntity<PaymentResult> makePayment(@Valid @RequestBody MakePaymentRequest request) {
+    public ResponseEntity<PaymentResultResponse> makePayment(@Valid @RequestBody MakePaymentRequest request) {
         MakePaymentCommand command = new MakePaymentCommand(
                 request.orderId(),
                 request.customerId(),
@@ -34,10 +32,10 @@ public class PaymentController {
     }
 
     @PostMapping("/cancel")
-    public ResponseEntity<Void> cancelPayment(@Valid @RequestBody CancelPaymentRequest request) {
+    public ResponseEntity<Void> cancelPayment(@RequestParam UUID paymentId, @RequestParam UUID customerId) {
         CancelPaymentCommand command = new CancelPaymentCommand(
-                request.orderId(),
-                request.customerId()
+                paymentId,
+                customerId
         );
 
         paymentApplicationService.cancelPayment(command);

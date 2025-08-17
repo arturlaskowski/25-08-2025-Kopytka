@@ -4,32 +4,22 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ActiveProfiles;
-import pl.kopytka.payment.web.dto.CancelPaymentRequest;
+import pl.kopytka.common.AcceptanceTest;
+import pl.kopytka.common.BaseIntegrationTest;
 import pl.kopytka.payment.web.dto.CreateWalletRequest;
 import pl.kopytka.payment.web.dto.MakePaymentRequest;
+import pl.kopytka.payment.web.dto.PaymentResultResponse;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@AcceptanceTest
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-@ActiveProfiles("test")
-class PaymentAcceptanceTest {
-
-    @LocalServerPort
-    private int port;
-
-    @Autowired
-    private TestRestTemplate restTemplate;
+class PaymentAcceptanceTest extends BaseIntegrationTest {
 
     private UUID customerId;
 
@@ -44,7 +34,7 @@ class PaymentAcceptanceTest {
                 new BigDecimal("1000.00")  // Enough balance for all test payments
         );
 
-        var response = restTemplate.postForEntity(getBaseWalletsUrl(), createWalletRequest, Void.class);
+        var response = testRestTemplate.postForEntity(getBaseWalletsUrl(), createWalletRequest, Void.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
     }
 
@@ -65,10 +55,45 @@ class PaymentAcceptanceTest {
         );
 
         // when
-        var response = restTemplate.postForEntity(getPaymentsProcessUrl(), request, Void.class);
+        var response = testRestTemplate.postForEntity(getPaymentsProcessUrl(), request, PaymentResultResponse.class);
 
         // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody())
+                .hasFieldOrProperty("paymentId")
+                .hasFieldOrPropertyWithValue("success", true)
+                .hasFieldOrPropertyWithValue("errorMessage", null);
+    }
+
+    @Test
+    @DisplayName("""
+            given payment request with to large amount,
+            when request is sent,
+            then payment is processed and HTTP 200 is returned with errorMessage""")
+    void givenToLargeAmountInPaymentRequest_whenRequestIsSent_thenPaymentProcessedAndHttp200Returned() {
+        // given
+        UUID orderId = UUID.randomUUID();
+        BigDecimal price = BigDecimal.valueOf(10000);
+
+        MakePaymentRequest request = new MakePaymentRequest(
+                orderId,
+                customerId,
+                price
+        );
+
+        // when
+        var response = testRestTemplate.postForEntity(getPaymentsProcessUrl(), request, PaymentResultResponse.class);
+
+        // then
+        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody())
+                .hasFieldOrProperty("paymentId")
+                .hasFieldOrPropertyWithValue("success", false)
+                .extracting("errorMessage")
+                .asString()
+                .contains("must be less than or equal to wallet amount");
     }
 
     @Test
@@ -85,10 +110,12 @@ class PaymentAcceptanceTest {
         makePaymentSuccessfully(orderId, amount);
 
         // when & then - second payment attempt fails
-        MakePaymentRequest request = new MakePaymentRequest(orderId, customerId, amount);
-        ResponseEntity<String> response = restTemplate.postForEntity(getPaymentsProcessUrl(), request, String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody()).contains("Payment already exists");
+        makePaymentExpectingError(
+                orderId,
+                amount,
+                HttpStatus.BAD_REQUEST,
+                "Payment already exists"
+        );
     }
 
     @Test
@@ -106,11 +133,11 @@ class PaymentAcceptanceTest {
         cancelPaymentSuccessfully(orderId);
 
         // when & then - second cancellation attempt fails
-        CancelPaymentRequest request = new CancelPaymentRequest(orderId, customerId);
-        ResponseEntity<String> response = restTemplate.postForEntity(
-                getPaymentsCancelUrl(orderId), request, String.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
-        assertThat(response.getBody()).contains("Payment is already cancelled");
+        cancelPaymentExpectingError(
+                orderId,
+                HttpStatus.BAD_REQUEST,
+                "Payment is already cancelled"
+        );
     }
 
     @Test
@@ -128,23 +155,48 @@ class PaymentAcceptanceTest {
         makePaymentSuccessfully(orderId, amount);
 
         // when & then - cancellation with different customer ID fails
-        CancelPaymentRequest request = new CancelPaymentRequest(orderId, differentCustomerId);
-        ResponseEntity<Void> response = restTemplate.postForEntity(
-                getPaymentsCancelUrl(orderId, differentCustomerId), request, Void.class);
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
+        cancelPaymentExpectingError(
+                orderId,
+                differentCustomerId,
+                HttpStatus.BAD_REQUEST,
+                "Customer ID does not match the payment"
+        );
     }
 
     private void makePaymentSuccessfully(UUID orderId, BigDecimal amount) {
         MakePaymentRequest request = new MakePaymentRequest(orderId, customerId, amount);
-        ResponseEntity<Void> response = restTemplate.postForEntity(getPaymentsProcessUrl(), request, Void.class);
+        ResponseEntity<Void> response = testRestTemplate.postForEntity(getPaymentsProcessUrl(), request, Void.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
     }
 
+    private void makePaymentExpectingError(UUID orderId, BigDecimal amount,
+                                           HttpStatus expectedStatus, String expectedErrorMessage) {
+        MakePaymentRequest request = new MakePaymentRequest(orderId, customerId, amount);
+        ResponseEntity<String> response = testRestTemplate.postForEntity(getPaymentsProcessUrl(), request, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(expectedStatus);
+        assertThat(response.getBody()).contains(expectedErrorMessage);
+    }
+
     private void cancelPaymentSuccessfully(UUID orderId) {
-        CancelPaymentRequest request = new CancelPaymentRequest(orderId, customerId);
-        ResponseEntity<Void> response = restTemplate.postForEntity(
-                getPaymentsCancelUrl(orderId), request, Void.class);
+        ResponseEntity<Void> response = testRestTemplate.postForEntity(
+                getPaymentsCancelUrl(orderId), null, Void.class);
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
+    }
+
+    private void cancelPaymentExpectingError(UUID orderId,
+                                             HttpStatus expectedStatus, String expectedErrorMessage) {
+        ResponseEntity<String> response = testRestTemplate.postForEntity(
+                getPaymentsCancelUrl(orderId), null, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(expectedStatus);
+        assertThat(response.getBody()).contains(expectedErrorMessage);
+    }
+
+    private void cancelPaymentExpectingError(UUID orderId, UUID specificCustomerId,
+                                             HttpStatus expectedStatus, String expectedErrorMessage) {
+        ResponseEntity<String> response = testRestTemplate.postForEntity(
+                getPaymentsCancelUrl(orderId, specificCustomerId), null, String.class);
+        assertThat(response.getStatusCode()).isEqualTo(expectedStatus);
+        assertThat(response.getBody()).contains(expectedErrorMessage);
     }
 
     private String getPaymentsProcessUrl() {
@@ -152,11 +204,11 @@ class PaymentAcceptanceTest {
     }
 
     private String getPaymentsCancelUrl(UUID orderId) {
-        return "http://localhost:" + port + "/api/payments/cancel?orderId=" + orderId + "&customerId=" + customerId;
+        return "http://localhost:" + port + "/api/payments/cancel?paymentId=" + orderId + "&customerId=" + customerId;
     }
 
     private String getPaymentsCancelUrl(UUID orderId, UUID specificCustomerId) {
-        return "http://localhost:" + port + "/api/payments/cancel?orderId=" + orderId + "&customerId=" + specificCustomerId;
+        return "http://localhost:" + port + "/api/payments/cancel?paymentId=" + orderId + "&customerId=" + specificCustomerId;
     }
 
     private String getBaseWalletsUrl() {

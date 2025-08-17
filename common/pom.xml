@@ -11,6 +11,11 @@
 
     <artifactId>common</artifactId>
 
+    <properties>
+        <avro.version>1.12.0</avro.version>
+        <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
+    </properties>
+
     <build>
         <plugins>
             <plugin>
@@ -24,12 +29,28 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro-maven-plugin</artifactId>
+                <version>${avro.version}</version>
+                <configuration>
+                    <stringType>String</stringType>
+                    <enableDecimalLogicalType>true</enableDecimalLogicalType>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>schema</goal>
+                        </goals>
+                        <configuration>
+                            <sourceDirectory>src/main/resources/avro</sourceDirectory>
+                            <outputDirectory>src/main/java</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
-    
-    <!-- Exclude Spring Boot Maven plugin for this module -->
-    <properties>
-        <spring-boot.repackage.skip>true</spring-boot.repackage.skip>
-    </properties>
 
 </project>

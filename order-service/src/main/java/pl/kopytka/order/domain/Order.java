@@ -5,9 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import pl.kopytka.common.domain.valueobject.CustomerId;
-import pl.kopytka.common.domain.valueobject.Money;
-import pl.kopytka.common.domain.valueobject.OrderId;
+import pl.kopytka.common.domain.valueobject.*;
 
 import java.time.Instant;
 import java.util.HashSet;

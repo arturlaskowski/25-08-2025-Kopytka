@@ -10,7 +10,7 @@ import pl.kopytka.order.domain.OrderAddress;
 import pl.kopytka.order.domain.OrderItem;
 
 @Mapper(componentModel = "spring")
-public interface OrderMapper {
+interface OrderMapper {
 
     @Mapping(target = "id", source = "id.orderId")
     @Mapping(target = "customerId", source = "customerId.customerId")

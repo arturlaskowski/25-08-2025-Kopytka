@@ -1,19 +1,24 @@
 spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/test-db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
   jpa:
-    hibernate:
-      ddl-auto: create-drop
-    show-sql: true
-    open-in-view: false
     properties:
       hibernate:
-        "[format_sql]": true
+        '[format_sql]': true
+        '[default_schema]': public
+    show-sql: true
+  kafka:
+    bootstrap-servers: ${spring.embedded.kafka.brokers}
 
-eureka:
-  client:
-    enabled: false
+
+kafka-config:
+  bootstrap-servers: ${spring.embedded.kafka.brokers}
+  schema-registry-url-key: schema.registry.url
+  schema-registry-url: mock://test
 
 kopytka:
   scheduling:
     enabled: false
-
-

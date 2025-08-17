@@ -9,13 +9,13 @@ import pl.kopytka.common.domain.valueobject.Money;
 import pl.kopytka.common.domain.valueobject.OrderId;
 import pl.kopytka.payment.application.dto.CancelPaymentCommand;
 import pl.kopytka.payment.application.dto.MakePaymentCommand;
-import pl.kopytka.payment.application.dto.PaymentResult;
 import pl.kopytka.payment.application.exception.PaymentNotFoundException;
 import pl.kopytka.payment.application.exception.WalletNotFoundException;
 import pl.kopytka.payment.domain.Payment;
 import pl.kopytka.payment.domain.PaymentDomainException;
 import pl.kopytka.payment.domain.PaymentDomainService;
 import pl.kopytka.payment.domain.Wallet;
+import pl.kopytka.payment.web.dto.PaymentResultResponse;
 
 @Service
 @RequiredArgsConstructor
@@ -27,7 +27,7 @@ public class PaymentApplicationService {
     private final PaymentDomainService paymentDomainService;
 
     @Transactional
-    public PaymentResult makePayment(MakePaymentCommand command) {
+    public PaymentResultResponse makePayment(MakePaymentCommand command) {
         log.info("Processing payment for order: {}", command.orderId());
 
         // Check if payment already exists for this order
@@ -47,17 +47,17 @@ public class PaymentApplicationService {
 
         paymentDomainService.makePayment(payment, wallet);
         paymentRepository.save(payment);
-        return new PaymentResult(payment.getId().paymentId(), payment.isCompleted(), payment.getErrorMessage());
+        return new PaymentResultResponse(payment.getId().paymentId(), payment.isCompleted(), payment.getErrorMessage());
 
     }
 
     @Transactional
     public void cancelPayment(CancelPaymentCommand command) {
-        log.info("Processing payment cancellation for payment: {}", command.orderId());
+        log.info("Processing payment cancellation for payment: {}", command.paymentId());
 
         // We are using orderId as the payment ID in the test
-        Payment payment = paymentRepository.findByOrderId(new OrderId(command.orderId()))
-                .orElseThrow(() -> new PaymentNotFoundException("Payment not found for order: " + command.orderId()));
+        Payment payment = paymentRepository.findByOrderId(new OrderId(command.paymentId()))
+                .orElseThrow(() -> new PaymentNotFoundException("Payment not found for order: " + command.paymentId()));
 
         // Check if customer IDs match
         CustomerId requestCustomerId = new CustomerId(command.customerId());

@@ -1,0 +1,27 @@
+version: '3.3'
+
+#Opcjonalnie jeśli chcesz użyć pgAdmin do zarządzania bazą danych PostgreSQL
+
+services:
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    restart: unless-stopped
+    ports:
+      - "5050:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    volumes:
+      - kopytka_pgadmin_data:/var/lib/pgadmin
+      - ./pgadmin/servers.json:/pgadmin4/servers.json
+    networks:
+      - shared-kopytka-db-network
+
+networks:
+  shared-kopytka-db-network:
+    external: true
+
+volumes:
+  kopytka_pgadmin_data:

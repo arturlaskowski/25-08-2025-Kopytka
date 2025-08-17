@@ -37,14 +37,4 @@ public class GlobalExceptionHandler {
         );
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
-
-    @ExceptionHandler(value = ServiceUnavailableException.class)
-    public ResponseEntity<ErrorResponse> handleServiceUnavailableException(ServiceUnavailableException ex, HttpServletRequest request) {
-        log.error(ex.getMessage(), ex);
-        ErrorResponse errorResponse = new ErrorResponse(
-                "Service is temporarily unavailable",
-                request.getRequestURI()
-        );
-        return new ResponseEntity<>(errorResponse, HttpStatus.SERVICE_UNAVAILABLE);
-    }
 }

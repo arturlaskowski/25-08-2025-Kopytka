@@ -10,7 +10,6 @@ import java.time.Instant;
 
 import static pl.kopytka.payment.domain.PaymentStatus.*;
 
-
 @Entity(name = "payments")
 @Getter
 public class Payment {
@@ -18,10 +17,10 @@ public class Payment {
     @Id
     private PaymentId id;
 
-    @AttributeOverride(name = "orderId", column = @Column(name = "order_id"))
+    @AttributeOverride(name = "paymentId", column = @Column(name = "order_id"))
     private OrderId orderId;
 
-    @AttributeOverride(name = "orderId", column = @Column(name = "customer_id"))
+    @AttributeOverride(name = "paymentId", column = @Column(name = "customer_id"))
     private CustomerId customerId;
 
     @AttributeOverride(name = "amount", column = @Column(name = "price"))
@@ -52,7 +51,6 @@ public class Payment {
             id = PaymentId.newOne();
         }
         creationDate = Instant.now();
-        // Don't set status here as it may be an existing rejected payment being reprocessed
     }
 
     public void validatePaymentPrice() {

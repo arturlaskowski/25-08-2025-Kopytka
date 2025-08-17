@@ -13,4 +13,3 @@ public interface WalletRepository extends JpaRepository<Wallet, WalletId> {
 
     Optional<Wallet> findByCustomerId(CustomerId customerId);
 }
-

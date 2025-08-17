@@ -7,7 +7,7 @@ import pl.kopytka.common.config.EnableKopytkaCommon;
 @SpringBootApplication
 @EnableKopytkaCommon
 public class PaymentApp {
-
+    
     public static void main(String[] args) {
         SpringApplication.run(PaymentApp.class, args);
     }

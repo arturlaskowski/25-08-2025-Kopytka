@@ -1,0 +1,14 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "KopytkaDB",
+      "Group": "Servers",
+      "Host": "postgres",
+      "Port": 5432,
+      "MaintenanceDB": "kopytkadb",
+      "Username": "postgres",
+      "Password": "postgres",
+      "SSLMode": "prefer"
+    }
+  }
+}

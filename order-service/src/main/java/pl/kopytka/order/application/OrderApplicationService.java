@@ -1,42 +1,31 @@
 package pl.kopytka.order.application;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import pl.kopytka.common.domain.valueobject.*;
 import pl.kopytka.order.application.dto.CreateOrderCommand;
 import pl.kopytka.order.application.dto.OrderQuery;
+import pl.kopytka.order.application.exception.InvalidOrderException;
 import pl.kopytka.order.application.exception.OrderNotFoundException;
-import pl.kopytka.order.application.integration.customer.CustomerServiceClient;
-import pl.kopytka.order.application.integration.payment.PaymentServiceClient;
-import pl.kopytka.order.domain.*;
+import pl.kopytka.order.application.replicaiton.CustomerViewService;
+import pl.kopytka.order.domain.Order;
+import pl.kopytka.order.domain.OrderAddress;
+import pl.kopytka.order.domain.OrderItem;
 
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 @Slf4j
 public class OrderApplicationService {
 
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
-    private final CustomerServiceClient customerServiceClient;
-    private final PaymentServiceClient paymentServiceClient;
-    private final OrderApplicationService self;
-
-    public OrderApplicationService(OrderRepository orderRepository,
-                                   OrderMapper orderMapper,
-                                   CustomerServiceClient customerServiceClient,
-                                   PaymentServiceClient paymentServiceClient,
-                                   @Lazy OrderApplicationService self) {
-        this.orderRepository = orderRepository;
-        this.orderMapper = orderMapper;
-        this.customerServiceClient = customerServiceClient;
-        this.paymentServiceClient = paymentServiceClient;
-        this.self = self;
-    }
+    private final CustomerViewService customerViewService;
+    private final ProcessPaymentCommandPublisher processPaymentCommandPublisher;
 
     @Transactional
     public OrderId createOrder(CreateOrderCommand command) {
@@ -44,7 +33,9 @@ public class OrderApplicationService {
 
         // Verify customer exists via Customer Service
         CustomerId customerId = new CustomerId(command.customerId());
-        customerServiceClient.verifyCustomerExists(customerId);
+        if (!customerViewService.existsByCustomerId(customerId.id())) {
+            throw new InvalidOrderException("Customer does not exist: " + customerId.id());
+        }
 
         // Convert command to domain objects
         OrderAddress deliveryAddress = new OrderAddress(
@@ -80,30 +71,8 @@ public class OrderApplicationService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
+        processPaymentCommandPublisher.publishProcessPaymentCommand(orderId, order.getCustomerId(), order.getPrice());
         order.pay();
-
-        try {
-            // Process payment via Payment Service
-            paymentServiceClient.processPayment(
-                    orderId,
-                    order.getCustomerId(),
-                    order.getPrice()
-            );
-            log.info("Payment successful for order: {}", orderId.id());
-        } catch (Exception e) {
-            self.failOrder(orderId, e.getMessage());
-            log.error("Payment failed for order: {}, reason: {}", orderId.id(), e.getMessage());
-            throw e;
-        }
-    }
-
-    @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void failOrder(OrderId orderId, String reason) {
-        Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new OrderNotFoundException(orderId));
-
-        order.fail(reason);
-        log.info("Order {} failed: {}", orderId.id(), reason);
     }
 
     //TODO restaurant should be able to approve order

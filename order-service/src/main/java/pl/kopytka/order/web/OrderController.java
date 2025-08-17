@@ -5,12 +5,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import pl.kopytka.common.domain.valueobject.OrderId;
 import pl.kopytka.order.application.OrderApplicationService;
 import pl.kopytka.order.application.dto.CreateBasketItemDto;
 import pl.kopytka.order.application.dto.CreateOrderAddressDto;
 import pl.kopytka.order.application.dto.CreateOrderCommand;
 import pl.kopytka.order.application.dto.OrderQuery;
-import pl.kopytka.common.domain.valueobject.OrderId;
 import pl.kopytka.order.web.dto.CreateOrderRequest;
 
 import java.net.URI;
@@ -19,7 +19,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
-public class OrderController {
+class OrderController {
 
     private final OrderApplicationService orderApplicationService;
 

@@ -3,12 +3,15 @@ package pl.kopytka.payment.domain.entity;
 import org.junit.jupiter.api.Test;
 import pl.kopytka.common.domain.valueobject.CustomerId;
 import pl.kopytka.common.domain.valueobject.Money;
-import pl.kopytka.payment.domain.*;
+import pl.kopytka.payment.domain.PaymentDomainException;
+import pl.kopytka.payment.domain.Wallet;
+import pl.kopytka.payment.domain.WalletId;
 
 import java.math.BigDecimal;
 import java.util.UUID;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class WalletTest {
 

@@ -16,7 +16,7 @@ import javax.sql.DataSource;
  * It automatically creates the ShedLock table if it doesn't exist and configures locks to last at most 60 seconds.
  */
 @Configuration
-@ConditionalOnProperty(name = "kopytka.scheduling.enabled", havingValue = "true", matchIfMissing = true)
+@ConditionalOnProperty(name = "kopytka.scheduling.enabled", havingValue = "true")
 @EnableScheduling
 @EnableSchedulerLock(defaultLockAtMostFor = "PT60S")
 public class SchedulingConfig {

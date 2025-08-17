@@ -8,10 +8,10 @@ import pl.kopytka.common.domain.valueobject.CustomerId;
 import pl.kopytka.customer.application.dto.CustomerDto;
 import pl.kopytka.customer.application.exception.CustomerAlreadyExistsException;
 import pl.kopytka.customer.application.exception.CustomerNotFoundException;
-import pl.kopytka.customer.application.integration.payment.PaymentServiceClient;
-import pl.kopytka.customer.application.dto.CreateCustomerDto;
 import pl.kopytka.customer.domain.Customer;
-
+import pl.kopytka.customer.domain.event.CustomerCreatedEvent;
+import pl.kopytka.customer.messaging.CustomerCreatedEventPublisher;
+import pl.kopytka.customer.application.dto.CreateCustomerDto;
 
 import java.util.UUID;
 
@@ -21,7 +21,7 @@ import java.util.UUID;
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
-    private final PaymentServiceClient paymentServiceClient;
+    private final CustomerCreatedEventPublisher customerCreatedEventPublisher;
 
     public CustomerDto getCustomer(UUID id) {
         CustomerId customerId = new CustomerId(id);
@@ -35,14 +35,12 @@ public class CustomerService {
         if (customerRepository.existsByEmail(customerDto.email())) {
             throw new CustomerAlreadyExistsException(customerDto.email());
         }
-        
-        // Create the customer
+
         var customer = new Customer(customerDto.firstName(), customerDto.lastName(), customerDto.email());
         CustomerId customerId = customerRepository.save(customer).getCustomerId();
-        
-        // Create a wallet for the customer via the payment service
-        paymentServiceClient.createWallet(customerId);
-        
+        var customerCreatedEvent = new CustomerCreatedEvent(customer);
+        customerCreatedEventPublisher.publish(customerCreatedEvent);
+
         return customerId;
     }
 }

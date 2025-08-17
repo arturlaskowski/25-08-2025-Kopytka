@@ -15,7 +15,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/api/customers")
 @RequiredArgsConstructor
-public class CustomerController {
+class CustomerController {
 
     private final CustomerService customerService;
     private final CustomerApiMapper customerApiMapper;

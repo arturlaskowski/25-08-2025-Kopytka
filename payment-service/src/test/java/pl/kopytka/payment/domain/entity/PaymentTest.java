@@ -4,7 +4,9 @@ import org.junit.jupiter.api.Test;
 import pl.kopytka.common.domain.valueobject.CustomerId;
 import pl.kopytka.common.domain.valueobject.Money;
 import pl.kopytka.common.domain.valueobject.OrderId;
-import pl.kopytka.payment.domain.*;
+import pl.kopytka.payment.domain.Payment;
+import pl.kopytka.payment.domain.PaymentDomainException;
+import pl.kopytka.payment.domain.PaymentStatus;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -39,12 +41,12 @@ class PaymentTest {
         CustomerId customerId = new CustomerId(UUID.randomUUID());
         Money price = new Money(new BigDecimal("50.00"));
         Payment payment = new Payment(orderId, customerId, price);
-        
+
         Instant beforeInitialization = Instant.now();
 
         //when
         payment.initialize();
-        
+
         Instant afterInitialization = Instant.now();
 
         //then
@@ -187,10 +189,11 @@ class PaymentTest {
         payment.initialize(); // Initialize to set the id
 
         //when
-        payment.rejected("Test rejection reason");
+        payment.rejected("test");
 
         //then
         assertThat(payment.getStatus()).isEqualTo(PaymentStatus.REJECTED);
+        assertThat(payment.getErrorMessage()).isEqualTo("test");
         assertThat(payment.isRejected()).isTrue();
     }
 }

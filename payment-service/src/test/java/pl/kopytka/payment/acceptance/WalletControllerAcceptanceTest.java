@@ -2,12 +2,9 @@ package pl.kopytka.payment.acceptance;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
-import org.springframework.test.context.ActiveProfiles;
+import pl.kopytka.common.AcceptanceTest;
+import pl.kopytka.common.BaseIntegrationTest;
 import pl.kopytka.payment.web.dto.AddFundsRequest;
 import pl.kopytka.payment.web.dto.CreateWalletRequest;
 import pl.kopytka.payment.web.dto.WalletDto;
@@ -18,15 +15,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ActiveProfiles("test")
-class WalletControllerAcceptanceTest {
-
-    @LocalServerPort
-    private int port;
-
-    @Autowired
-    private TestRestTemplate restTemplate;
+@AcceptanceTest
+class WalletControllerAcceptanceTest extends BaseIntegrationTest {
 
     @Test
     @DisplayName("""
@@ -44,14 +34,14 @@ class WalletControllerAcceptanceTest {
         );
 
         // when
-        var postResponse = restTemplate.postForEntity(getBaseWalletsUrl(), request, Void.class);
+        var postResponse = testRestTemplate.postForEntity(getBaseWalletsUrl(), request, Void.class);
 
         // then
         assertThat(postResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         URI location = postResponse.getHeaders().getLocation();
         assertThat(location).isNotNull();
 
-        var getResponse = restTemplate.getForEntity(location, WalletDto.class);
+        var getResponse = testRestTemplate.getForEntity(location, WalletDto.class);
         assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         WalletDto wallet = getResponse.getBody();
@@ -80,7 +70,7 @@ class WalletControllerAcceptanceTest {
                 initialAmount
         );
 
-        var createResponse = restTemplate.postForEntity(getBaseWalletsUrl(), createRequest, Void.class);
+        var createResponse = testRestTemplate.postForEntity(getBaseWalletsUrl(), createRequest, Void.class);
         assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         URI location = createResponse.getHeaders().getLocation();
         assertThat(location).isNotNull();
@@ -92,7 +82,7 @@ class WalletControllerAcceptanceTest {
         AddFundsRequest addFundsRequest = new AddFundsRequest(additionalAmount);
 
         // when
-        var addFundsResponse = restTemplate.postForEntity(
+        var addFundsResponse = testRestTemplate.postForEntity(
                 getBaseWalletsUrl() + "/" + walletId + "/funds",
                 addFundsRequest,
                 Void.class
@@ -102,7 +92,7 @@ class WalletControllerAcceptanceTest {
         assertThat(addFundsResponse.getStatusCode()).isEqualTo(HttpStatus.NO_CONTENT);
 
         // Verify the wallet balance was updated
-        var getResponse = restTemplate.getForEntity(
+        var getResponse = testRestTemplate.getForEntity(
                 getBaseWalletsUrl() + "/" + walletId,
                 WalletDto.class
         );
@@ -129,11 +119,11 @@ class WalletControllerAcceptanceTest {
                 initialAmount
         );
 
-        var createResponse = restTemplate.postForEntity(getBaseWalletsUrl(), createRequest, Void.class);
+        var createResponse = testRestTemplate.postForEntity(getBaseWalletsUrl(), createRequest, Void.class);
         assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
         // when
-        var getResponse = restTemplate.getForEntity(
+        var getResponse = testRestTemplate.getForEntity(
                 getBaseWalletsUrl() + "/customer/" + customerId,
                 WalletDto.class
         );
@@ -156,7 +146,7 @@ class WalletControllerAcceptanceTest {
         var nonExistentWalletId = UUID.randomUUID();
 
         // when
-        var response = restTemplate.getForEntity(
+        var response = testRestTemplate.getForEntity(
                 getBaseWalletsUrl() + "/" + nonExistentWalletId,
                 Object.class
         );

@@ -1,30 +1,69 @@
 spring:
   application:
     name: payment-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/kopytkadb?currentSchema=payment_schema
+    driver-class-name: org.postgresql.Driver
+    username: payment_user
+    password: payment_password
   jpa:
     hibernate:
       ddl-auto: update
-  #  show-sql: true
+ #   show-sql: true
     open-in-view: false
     properties:
       hibernate:
+        "[default_schema]": payment_schema
         "[format_sql]": true
-
-payment-service:
-  reprocess-payments:
-    interval-in-seconds: 300  # Run every 5 minutes
-    reprocess-scheduler:
-      lock-at-most-for: 10m     # Maximum lock duration
-      lock-at-least-for: 4m     # Minimum lock duration
 
 server:
   port: 8582
 
-eureka:
-  instance:
-    preferIpAddress: true  # Preferuj używanie adresu IP zamiast nazwy hosta podczas rejestracji usługi w Eureka
-  client:
-    fetchRegistry: true    # Pozwala na pobieranie rejestru usług z serwera Eureka, umożliwiając odnajdywanie innych usług
-    registerWithEureka: true  # Rejestruje tę usługę w serwerze Eureka, aby inne serwisy mogły ją odnaleźć
-    serviceUrl:
-      defaultZone: http://localhost:8070/eureka/  # Adres URL serwera Eureka, do którego usługa się rejestruje i z którego pobiera informacje o innych usługach
+# Kopytka configurations
+kopytka:
+  scheduling:
+    enabled: false  # No scheduled tasks in payment service
+
+payment-service:
+  kafka:
+    group-id: payment-topic-consumer
+    topics:
+      customer-event: customer-events
+      payment-command: payment-commands
+
+kafka-config:
+  bootstrap-servers: localhost:9092
+  schema-registry-url-key: schema.registry.url
+  schema-registry-url: http://localhost:8081
+  num-of-partitions: 1
+  replication-factor: 1
+
+kafka-producer-config:
+  key-serializer-class: org.apache.kafka.common.serialization.StringSerializer
+  value-serializer-class: io.confluent.kafka.serializers.KafkaAvroSerializer
+  compression-type: snappy
+  acks: all
+  batch-size: 16384
+  batch-size-boost-factor: 100
+  linger-ms: 5
+  request-timeout-ms: 60000
+  retry-count: 5
+
+kafka-consumer-config:
+  key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  value-deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+  auto-offset-reset: earliest
+  specific-avro-reader-key: specific.avro.reader
+  specific-avro-reader: true
+  batch-listener: true
+  auto-startup: true
+  concurrency-level: 3
+  session-timeout-ms: 10000
+  heartbeat-interval-ms: 3000
+  max-poll-interval-ms: 300000
+  max-poll-records: 500
+  max-partition-fetch-bytes-default: 1048576
+  max-partition-fetch-bytes-boost-factor: 1
+  poll-timeout-ms: 150
+
+

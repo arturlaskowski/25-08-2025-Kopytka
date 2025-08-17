@@ -1,45 +1,69 @@
-# Śledzenie procesu w architekturze rozproszonej
+# Stawianie środowiska
 
-Aby określić, jak przebiega proces w architekturze rozproszonej, potrzebujemy mechanizmu do jego śledzenia (trackowania).
+* **Uruchom infrastrukturę** za pomocą pliku [docker-compose](infrastructure/docker-compose.yml).
 
-Przykład:
-- Z zewnątrz przychodzi request do **gateway**, który przekierowuje go do `customer-service`.
-- `customer-service` wywołuje `payment-service`, aby w trakcie tego procesu utworzyć portfel.
-- Jeśli coś się wysypie w `payment-service`, musimy wiedzieć, że ten request pochodził od `customer-service`, a nie bezpośrednio z zewnątrz.
-
-Dlatego konieczne jest, aby mieć możliwość **trackowania** całego procesu.
+* **GUI do Kafki**
+  Po uruchomieniu, pod adresem [http://localhost:8080/](http://localhost:8080/) dostępne jest GUI do Kafki z podłączonym Schema Registry. Możesz tam weryfikować, jakie wiadomości pojawiły się na poszczególnych topicach.
 
 ---
 
-## Mechanizm trackowania
+### Baza danych
 
-W tym celu często stosuje się podejście, gdzie dla każdego procesu generowany jest **unikalny identyfikator** i przekazywany w każdym request i response jako nagłówek HTTP.
-
-- Identyfikator może być przyjęty z zewnątrz (jeśli jest podany).
-- Jeśli nie został podany, jest automatycznie generowany w pierwszym miejscu przyjmującym request, czyli zazwyczaj w **gateway**.
-- W przypadku procesów, które nie przechodzą przez gateway, identyfikator jest generowany wewnątrz aplikacji.
-
-Dzięki temu możemy śledzić cały przepływ (flow) i łatwo znaleźć miejsce problemu.  
-Na przykład, korzystając z ELK Stack, wystarczy wpisać dany identyfikator, aby zobaczyć pełną ścieżkę przetwarzania danego requestu.
+Każda baza danych to osobny schemat. Zapewnia to separację, oszczędza lokalnie zasoby, a w środowisku wdrożeniowym pozwala korzystać z oddzielnych baz danych.
+Po zalogowaniu się do bazy jako użytkownik `admin_user` z hasłem `admin_password` (`jdbc:postgresql://localhost:5432/kopytkadb`), masz dostęp do wszystkich schematów.
 
 ---
 
-## Implementacja
+### PgAdmin (opcjonalnie)
 
-### Dodawanie nagłówka `X-Trace-Id` i logowanie po stronie gateway
+Jeśli nie korzystasz z IntelliJ w wersji Ultimate, możesz użyć **pgAdmina** do zarządzania bazą danych.
+Aby go uruchomić, użyj pliku [docker-compose.pgadmin.yml](infrastructure/docker-compose.pgadmin.yml).
 
-Nagłówek `X-Trace-Id` jest dodawany, jeśli nie został podany w przychodzącym request. Dodatkowo trace-id jest logowany.
+Po uruchomieniu (po około minucie) będzie dostępny pod adresem:
+[http://localhost:5050](http://localhost:5050)
 
-📄 Gateway: [TraceIdFilter.java](gateway/src/main/java/pl/kopytka/TraceIdFilter.java)
+Baza danych **kopytkaDb** powinna być już skonfigurowana.
+Jeśli pojawi się okno z prośbą o ustawienie hasła lub danych dostępowych wpisz `postgres`.
 
-### Obsługa po stronie mikroserwisów
+---
 
-#### Dodawanie nagłówka
+### Sprawdzenie działania
 
-Jeśli nie został podany (nie zawsze wszystko przychodzi z gateway, np. jakiś wewnętrzny proces odpalany przez scheduler):
+1. Uruchom wszystkie mikroserwisy.
 
-📄 [TraceIdFeignInterceptor.java](common/src/main/java/pl/kopytka/common/tracing/TraceIdFeignInterceptor.java)
+2. Wyślij żądanie:
 
-#### Logowanie trace-id
+   ```
+   POST http://localhost:8581/api/customers
+   ```
 
-📄 [LoggingFilter.java](common/src/main/java/pl/kopytka/common/tracing/LoggingFilter.java)
+   Z body:
+
+   ```json
+   {
+     "firstName": "Ferdynand",
+     "lastName": "Kiepski",
+     "email": "ferdynand.kiepski@example.com"
+   }
+   ```
+
+3. Po udanym utworzeniu klienta sprawdź, czy:
+
+  * jego ID zostało zreplikowane do schematu `order_schema` w tabeli `customer_view`,
+  * w schemacie `payment_schema` w tabeli `wallets` utworzono dla niego portfel.
+
+Jeśli chcesz podejrzeć wiadomości, możesz to zrobić w GUI do Kafki.
+Jeśli dane zostały poprawnie zreplikowane to znaczy, że infrastruktura działa i można przejść dalej!
+
+---
+
+### Czyszczenie infrastruktury
+
+Polecenie z pliku [docker-clean.sh](infrastructure/docker-clean.sh) usuwa całą infrastrukturę.
+Zwalnia to zasoby i zapobiega kolizjom przy przełączaniu się na projekt **Punktozaur**.
+
+Jeśli stworzyłeś lub zmodyfikowałeś schematy Avro dla wiadomości ([resources-avro](common/src/main/resources/avro)), to usuń katalog
+[avro](common/src/main/java/pl/kopytka/avro) i ponownie skompiluj projekt common, np. używając polecenia `mvn compile`.
+
+
+

@@ -1,16 +1,18 @@
 package pl.kopytka.order.acceptance;
 
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ContextConfiguration;
+import pl.kopytka.common.AcceptanceTest;
+import pl.kopytka.common.KafkaIntegrationTest;
 import pl.kopytka.common.web.ErrorResponse;
 import pl.kopytka.order.application.dto.OrderQuery;
+import pl.kopytka.order.application.replicaiton.CustomerView;
+import pl.kopytka.order.application.replicaiton.CustomerViewService;
 import pl.kopytka.order.domain.OrderStatus;
 import pl.kopytka.order.web.dto.BasketItemRequest;
 import pl.kopytka.order.web.dto.CreateOrderRequest;
@@ -20,18 +22,22 @@ import java.math.BigDecimal;
 import java.net.URI;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ContextConfiguration(initializers = TestApplicationContextInitializer.class, classes = TestConfig.class)
-class OrderAcceptanceTest {
+@AcceptanceTest(topics = OrderAcceptanceTest.PAYMENT_COMMAND_TOPIC)
+class OrderAcceptanceTest extends KafkaIntegrationTest {
 
-    @LocalServerPort
-    private int port;
+    static final String PAYMENT_COMMAND_TOPIC = "payment-commands";
 
     @Autowired
-    private TestRestTemplate restTemplate;
+    private CustomerViewService customerViewService;
+
+    @BeforeEach
+    void setUp() {
+        setupKafkaConsumer(PAYMENT_COMMAND_TOPIC);
+    }
 
     @Test
     @DisplayName("""
@@ -41,6 +47,7 @@ class OrderAcceptanceTest {
     void givenValidOrderCreationRequest_whenRequestIsSent_thenOrderCreatedAndHttp201Returned() {
         // given
         UUID customerId = UUID.randomUUID();
+        customerViewService.onCreateCustomer(new CustomerView(customerId));
         UUID productId = UUID.randomUUID();
 
         OrderAddressRequest address = new OrderAddressRequest(
@@ -63,13 +70,13 @@ class OrderAcceptanceTest {
         );
 
         // when
-        var postResponse = restTemplate.postForEntity(getBaseOrdersUrl(), request, Void.class);
+        var postResponse = testRestTemplate.postForEntity(getBaseOrdersUrl(), request, Void.class);
 
         // then
         assertThat(postResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
         assertThat(postResponse.getHeaders().getLocation()).isNotNull();
 
-        var getResponse = restTemplate.getForEntity(postResponse.getHeaders().getLocation(), OrderQuery.class);
+        var getResponse = testRestTemplate.getForEntity(postResponse.getHeaders().getLocation(), OrderQuery.class);
         assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
 
         OrderQuery order = getResponse.getBody();
@@ -87,12 +94,12 @@ class OrderAcceptanceTest {
             given order exists,
             when payment request is sent,
             then order status is updated to PAID""")
-    void givenOrderExists_whenPaymentRequestIsSent_thenOrderStatusIsUpdatedToPaid() {
+    void givenOrderExists_whenPaymentRequestIsSent_thenOrderStatusIsUpdatedToPaid() throws InterruptedException {
         // given
         UUID orderId = createOrder();
 
         // when
-        var payResponse = restTemplate.postForEntity(
+        var payResponse = testRestTemplate.postForEntity(
                 getBaseOrdersUrl() + "/" + orderId + "/pay",
                 null,
                 Void.class
@@ -104,6 +111,12 @@ class OrderAcceptanceTest {
         // Verify the order status was updated
         OrderQuery order = getOrder(orderId);
         assertThat(order.status()).isEqualTo(OrderStatus.PAID);
+
+        // Verify that event was sent to Kafka
+        ConsumerRecord<String, String> customerEvent = records.poll(5, TimeUnit.SECONDS);
+        assertThat(customerEvent).isNotNull();
+        assertThat(customerEvent.topic()).isEqualTo(PAYMENT_COMMAND_TOPIC);
+        assertThat(customerEvent.key()).isEqualTo((orderId.toString()));
     }
 
     @Test
@@ -116,7 +129,7 @@ class OrderAcceptanceTest {
         UUID orderId = createOrder();
 
         // Pay the order first
-        var payResponse = restTemplate.postForEntity(
+        var payResponse = testRestTemplate.postForEntity(
                 getBaseOrdersUrl() + "/" + orderId + "/pay",
                 null,
                 Void.class
@@ -128,7 +141,7 @@ class OrderAcceptanceTest {
         assertThat(paidOrder.status()).isEqualTo(OrderStatus.PAID);
 
         // when
-        var approveResponse = restTemplate.postForEntity(
+        var approveResponse = testRestTemplate.postForEntity(
                 getBaseOrdersUrl() + "/" + orderId + "/approve",
                 null,
                 Void.class
@@ -156,7 +169,7 @@ class OrderAcceptanceTest {
         assertThat(pendingOrder.status()).isEqualTo(OrderStatus.PENDING);
 
         // when
-        var approveResponse = restTemplate.postForEntity(
+        var approveResponse = testRestTemplate.postForEntity(
                 getBaseOrdersUrl() + "/" + orderId + "/approve",
                 null,
                 ErrorResponse.class
@@ -182,14 +195,14 @@ class OrderAcceptanceTest {
         UUID orderId = createOrder();
 
         // Pay the order
-        restTemplate.postForEntity(
+        testRestTemplate.postForEntity(
                 getBaseOrdersUrl() + "/" + orderId + "/pay",
                 null,
                 Void.class
         );
 
         // Approve the order
-        restTemplate.postForEntity(
+        testRestTemplate.postForEntity(
                 getBaseOrdersUrl() + "/" + orderId + "/approve",
                 null,
                 Void.class
@@ -201,7 +214,7 @@ class OrderAcceptanceTest {
 
         // when
         // Try to approve the order second time
-        var secondApproveResponse = restTemplate.postForEntity(
+        var secondApproveResponse = testRestTemplate.postForEntity(
                 getBaseOrdersUrl() + "/" + orderId + "/approve",
                 null,
                 ErrorResponse.class
@@ -225,6 +238,7 @@ class OrderAcceptanceTest {
     void givenOrderWithIncorrectPrice_whenRequestIsSent_thenHttp400BadRequestReturned() {
         // given
         UUID customerId = UUID.randomUUID();
+        customerViewService.onCreateCustomer(new CustomerView(customerId));
         UUID productId = UUID.randomUUID();
 
         OrderAddressRequest address = new OrderAddressRequest(
@@ -249,7 +263,7 @@ class OrderAcceptanceTest {
         );
 
         // when
-        var response = restTemplate.postForEntity(getBaseOrdersUrl(), request, ErrorResponse.class);
+        var response = testRestTemplate.postForEntity(getBaseOrdersUrl(), request, ErrorResponse.class);
 
         // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.BAD_REQUEST);
@@ -271,7 +285,7 @@ class OrderAcceptanceTest {
         UUID orderId = createOrder();
 
         // Pay the order first time
-        restTemplate.postForEntity(
+        testRestTemplate.postForEntity(
                 getBaseOrdersUrl() + "/" + orderId + "/pay",
                 null,
                 Void.class
@@ -279,7 +293,7 @@ class OrderAcceptanceTest {
 
         // when
         // Try to pay the order second time
-        var secondPayResponse = restTemplate.postForEntity(
+        var secondPayResponse = testRestTemplate.postForEntity(
                 getBaseOrdersUrl() + "/" + orderId + "/pay",
                 null,
                 ErrorResponse.class
@@ -297,6 +311,7 @@ class OrderAcceptanceTest {
 
     private UUID createOrder() {
         UUID customerId = UUID.randomUUID();
+        customerViewService.onCreateCustomer(new CustomerView(customerId));
         UUID productId = UUID.randomUUID();
 
         OrderAddressRequest address = new OrderAddressRequest(
@@ -317,7 +332,7 @@ class OrderAcceptanceTest {
                 basketItems
         );
 
-        ResponseEntity<Void> createResponse = restTemplate.postForEntity(getBaseOrdersUrl(), createRequest, Void.class);
+        ResponseEntity<Void> createResponse = testRestTemplate.postForEntity(getBaseOrdersUrl(), createRequest, Void.class);
         assertThat(createResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
 
         URI location = createResponse.getHeaders().getLocation();
@@ -327,7 +342,7 @@ class OrderAcceptanceTest {
     }
 
     private OrderQuery getOrder(UUID orderId) {
-        ResponseEntity<OrderQuery> response = restTemplate.getForEntity(
+        ResponseEntity<OrderQuery> response = testRestTemplate.getForEntity(
                 getBaseOrdersUrl() + "/" + orderId,
                 OrderQuery.class
         );
@@ -339,7 +354,7 @@ class OrderAcceptanceTest {
     }
 
     String getBaseOrdersUrl() {
-        return "http://localhost:" + port + "/api/orders";
+        return getBaseUrl("/api/orders");
     }
 
 }

@@ -1,35 +1,36 @@
 package pl.kopytka.customer.acceptance;
 
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
-import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.ContextConfiguration;
+import pl.kopytka.common.AcceptanceTest;
+import pl.kopytka.common.KafkaIntegrationTest;
 import pl.kopytka.common.web.ErrorResponse;
 import pl.kopytka.customer.application.CustomerService;
-import pl.kopytka.customer.application.dto.CreateCustomerDto;
 import pl.kopytka.customer.application.dto.CustomerDto;
+import pl.kopytka.customer.application.dto.CreateCustomerDto;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
-@ContextConfiguration(initializers = TestApplicationContextInitializer.class, classes = TestConfig.class)
-class CustomerAcceptanceTest {
+@AcceptanceTest(topics = CustomerAcceptanceTest.CUSTOMER_EVENT_TOPIC)
+class CustomerAcceptanceTest extends KafkaIntegrationTest {
 
-    @LocalServerPort
-    private int port;
-
-    @Autowired
-    private TestRestTemplate testRestTemplate;
+    static final String CUSTOMER_EVENT_TOPIC = "customer-events";
 
     @Autowired
     private CustomerService customerService;
+
+    @BeforeEach
+    void setUp() {
+        setupKafkaConsumer(CUSTOMER_EVENT_TOPIC);
+    }
 
     @Test
     @DisplayName("""
@@ -127,7 +128,40 @@ class CustomerAcceptanceTest {
                 .isNotNull();
     }
 
+    @Test
+    @DisplayName("""
+            given request for creating Customer,
+            when request is sent,
+            then Customer is added, HTTP 201 status received, and event is published to Kafka""")
+    void givenRequestForCreatingCustomer_whenRequestIsSent_thenCustomerAddedHttp201AndEventPublished() throws Exception {
+        //given
+        var createCustomerDto = new CreateCustomerDto("Helena", "Kowalska", "helena@example.com");
+
+        //when
+        ResponseEntity<UUID> postResponse = testRestTemplate.postForEntity(getBaseCustomersUrl(), createCustomerDto, UUID.class);
+
+        //then
+        // Verify HTTP response
+        assertThat(postResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        var location = postResponse.getHeaders().getLocation();
+        assertThat(location).isNotNull();
+        var customerId = location.getPath().split("/")[3];
+        var getResponse = testRestTemplate.getForEntity(location, CustomerDto.class);
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        assertThat(getResponse.getBody())
+                .hasFieldOrPropertyWithValue("firstName", createCustomerDto.firstName())
+                .hasFieldOrPropertyWithValue("lastName", createCustomerDto.lastName())
+                .hasFieldOrPropertyWithValue("email", createCustomerDto.email());
+
+        // Verify that event was sent to Kafka
+        ConsumerRecord<String, String> customerEvent = records.poll(5, TimeUnit.SECONDS);
+        assertThat(customerEvent).isNotNull();
+        assertThat(customerEvent.topic()).isEqualTo(CUSTOMER_EVENT_TOPIC);
+        assertThat(customerEvent.key()).isEqualTo((customerId));
+    }
+
     private String getBaseCustomersUrl() {
-        return "http://localhost:" + port + "/api/customers";
+        return getBaseUrl("/api/customers");
     }
 }

@@ -7,7 +7,7 @@ import pl.kopytka.customer.web.dto.CreateCustomerRequest;
 import pl.kopytka.customer.web.dto.CustomerResponse;
 
 @Mapper(componentModel = "spring")
-public interface CustomerApiMapper {
+interface CustomerApiMapper {
 
     CustomerResponse toCustomerResponse(CustomerDto customerDto);
 
