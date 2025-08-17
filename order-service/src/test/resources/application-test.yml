@@ -1,0 +1,16 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        "[format_sql]": true
+
+# The services URLs are irrelevant for tests as the clients are mocked
+services:
+  customer:
+    url: http://localhost:8581
+  payment:
+    url: http://localhost:8582

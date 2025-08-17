@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: order-service
+  jpa:
+    hibernate:
+      ddl-auto: update
+    #show-sql: true
+    open-in-view: false
+    properties:
+      hibernate:
+        "[format_sql]": true
+
+services:
+  customer:
+    url: http://localhost:8581
+  payment:
+    url: http://localhost:8582
+
+server:
+  port: 8580
+
