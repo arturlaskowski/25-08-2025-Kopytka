@@ -7,6 +7,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import pl.kopytka.application.exception.CustomerAlreadyExistsException;
 import pl.kopytka.application.exception.CustomerNotFoundException;
 import pl.kopytka.application.exception.OrderNotFoundException;
@@ -14,7 +15,8 @@ import pl.kopytka.domain.OrderDomainException;
 
 import java.util.stream.Collectors;
 
-@ControllerAdvice
+@RestControllerAdvice
+@SuppressWarnings("JvmTaintAnalysis")
 public class RestApiExceptionHandler {
 
     @ExceptionHandler(value = CustomerNotFoundException.class)
