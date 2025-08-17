@@ -18,7 +18,6 @@ import pl.kopytka.order.query.OrderQueryService;
 import pl.kopytka.order.web.dto.CreateOrderRequest;
 import pl.kopytka.order.web.dto.GetOrderByIdQuery;
 import pl.kopytka.order.web.dto.OrderPageQuery;
-import pl.kopytka.order.web.dto.TrackingOrderQuery;
 
 import java.net.URI;
 import java.util.UUID;
@@ -66,11 +65,6 @@ class OrderController {
     @GetMapping("/{id}")
     public GetOrderByIdQuery getOrderById(@PathVariable UUID id) {
         return orderQueryService.getOrderById(id);
-    }
-
-    @GetMapping("/{id}/track")
-    public TrackingOrderQuery trackOrder(@PathVariable UUID id) {
-        return orderQueryService.trackOrder(id);
     }
 
     @GetMapping

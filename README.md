@@ -1,19 +1,10 @@
-# CQRS Command Handler
+# CQRS – jedna tabela, projekcja
 
-Modyfikacja stanu często bywa skomplikowana, a jak wiadomo w IT, jeśli coś jest skomplikowane, to lepiej rozbić problem na mniejsze części i rozwijać je niezależnie. 
-W tym celu często wykorzystywane jest podejście **Command Handler** (implementacja wzorca Mediator).
+Rozwiązanie znajdujące się na tym branchu nie jest zazwyczaj rozwiązaniem docelowym, lecz jedynie etapem przejściowym.
+Polega ono na tym, że dwie encje korzystają z jednej tabeli 
+* [Order](src/main/java/pl/kopytka/order/domain/Order.java) jedna służy do modyfikacji stanu, 
+* [TrackingOrderProjection](src/main/java/pl/kopytka/trackorder/TrackingOrderProjection.java) a druga, często nazywana **projekcją** lub **repliką**, służy do odczytu danych dla danego scenariusza.
 
-- **Command** – intencja zmiany stanu (DTO zawierające wszystkie dane potrzebne do zmiany oraz nazwę opisującą tę zmianę).
-- **Command Handler** – klasa obsługująca dokładnie jedną komendę.
+Dzięki takiemu podejściu możemy stworzyć cały moduł [trackorder](src/main/java/pl/kopytka/trackorder) i zweryfikować swój pomysł bez konieczności wprowadzania zmian w strukturze bazy danych ani ingerencji w istniejący kod aplikacji.
 
-W Springu często implementujemy to podejście wykorzystując mechanizmy frameworka, czyli podczas startu kontekstu wszystkie beany będące command handlerami rejestrują się, tworząc mapę,
-w której jest jasna informacja, jaka komenda jest obsługiwana przez jaki handler (Mediator). Przykład znajduje się w: [Implementacja mediatora](src/main/java/pl/kopytka/common/command/SynchronousCommandHandlerExecutor.java)
-
-Dzięki temu kontroler może przekazać tylko komendę do mediatora, a mediator sam dobierze odpowiedni handler. 
-Przykład kontrolera: [OrderController](src/main/java/pl/kopytka/order/web/OrderController.java)
-
-Obsługa komend dla modułu order znajduje się w: [wykorzystanie mechanizmu command-handler](src/main/java/pl/kopytka/order/command)
-
-Dzięki temu podejściu mediator może mieć wiele implementacji, np.:
-- Dodawanie dodatkowego logowania w celu weryfikacji czasu trwania danego procesu (np. w osobnym profilu Springa).
-- Zmiana na podejście asynchroniczne, jeśli zajdzie taka potrzeba.
+Jeśli to rozwiązanie okaże się spełniać nasze kryteria, kolejnym krokiem będzie stworzenie osobnej tabeli do trackowania zamówienia oraz implementacja replikacji danych. To zostanie zrealizowane w kolejnym branchu.
