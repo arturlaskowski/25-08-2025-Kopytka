@@ -5,6 +5,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import pl.kopytka.common.domain.Money;
+
+import java.util.UUID;
 
 
 @IdClass(OrderItemId.class)
@@ -21,7 +24,7 @@ public class OrderItem {
     @JoinColumn(name = "order_id")
     private Order order;
 
-    private ProductId productId;
+    private UUID productId;
 
     @NotNull
     @AttributeOverride(name = "amount", column = @Column(name = "price"))
@@ -35,7 +38,7 @@ public class OrderItem {
     @AttributeOverride(name = "amount", column = @Column(name = "total_price"))
     private Money totalPrice;
 
-    public OrderItem(ProductId productId, Money price, Quantity quantity, Money totalPrice) {
+    public OrderItem(UUID productId, Money price, Quantity quantity, Money totalPrice) {
         this.productId = productId;
         this.price = price;
         this.quantity = quantity;

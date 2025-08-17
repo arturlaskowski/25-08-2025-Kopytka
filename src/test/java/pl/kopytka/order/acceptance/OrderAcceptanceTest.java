@@ -12,13 +12,17 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import pl.kopytka.common.CustomerId;
-import pl.kopytka.common.ErrorResponse;
-import pl.kopytka.order.application.OrderRepository;
-import pl.kopytka.order.application.dto.CreateOrderAddressDto;
-import pl.kopytka.order.application.dto.CreateOrderDto;
-import pl.kopytka.order.application.dto.CreateOrderItemDto;
-import pl.kopytka.order.domain.*;
+import pl.kopytka.common.domain.CustomerId;
+import pl.kopytka.common.domain.Money;
+import pl.kopytka.common.domain.OrderId;
+import pl.kopytka.common.web.ErrorResponse;
+import pl.kopytka.order.application.command.OrderRepository;
+import pl.kopytka.order.application.command.dto.CreateOrderAddressDto;
+import pl.kopytka.order.application.command.dto.CreateOrderCommand;
+import pl.kopytka.order.application.command.dto.CreateOrderItemDto;
+import pl.kopytka.order.domain.Order;
+import pl.kopytka.order.domain.OrderStatus;
+import pl.kopytka.order.domain.Quantity;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -46,8 +50,8 @@ class OrderAcceptanceTest {
     @DisplayName("""
             given request to add order for existing customer,
             when request is sent,
-            then save order and HTTP 200 status received""")
-    void givenRequestToAddOrderForExistingCustomer_whenRequestIsSent_thenOrderSavedAndHttp200() {
+            then save order and HTTP 201 status received""")
+    void givenRequestToAddOrderForExistingCustomer_whenRequestIsSent_thenOrderSavedAndHttp201() {
         // given
         var createOrderDto = createOrderDto();
 
@@ -56,9 +60,9 @@ class OrderAcceptanceTest {
 
         // then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CREATED);
-        assertThat(response.getHeaders().getLocation()).isNotNull();
-        var orderId = response.getHeaders().getLocation().getPath().split("/")[3];
-
+        var location = response.getHeaders().getLocation();
+        assertThat(location).isNotNull();
+        var orderId = location.getPath().split("/")[3];
         var savedOrder = orderRepository.findById(new OrderId(UUID.fromString(orderId))).orElseThrow();
         assertThat(savedOrder)
                 .hasNoNullFieldsOrProperties()
@@ -66,14 +70,14 @@ class OrderAcceptanceTest {
                 .hasFieldOrPropertyWithValue("price", new Money(createOrderDto.price()))
                 .hasFieldOrPropertyWithValue("status", OrderStatus.PENDING)
                 .extracting(Order::getAddress)
-                .hasFieldOrPropertyWithValue("street", createOrderDto.address().street())
-                .hasFieldOrPropertyWithValue("postCode", createOrderDto.address().postCode())
-                .hasFieldOrPropertyWithValue("city", createOrderDto.address().city())
-                .hasFieldOrPropertyWithValue("houseNo", createOrderDto.address().houseNo());
+                .hasFieldOrPropertyWithValue("street", createOrderDto.deliveryAddress().street())
+                .hasFieldOrPropertyWithValue("postCode", createOrderDto.deliveryAddress().postCode())
+                .hasFieldOrPropertyWithValue("city", createOrderDto.deliveryAddress().city())
+                .hasFieldOrPropertyWithValue("houseNo", createOrderDto.deliveryAddress().houseNo());
 
         assertThat(savedOrder.getItems()).hasSize(createOrderDto.basketItems().size())
                 .zipSatisfy(createOrderDto.basketItems(), (orderItem, orderItemDto) -> {
-                    assertThat(orderItem.getProductId().productId()).isEqualTo(orderItemDto.productId());
+                    assertThat(orderItem.getProductId()).isEqualTo(orderItemDto.productId());
                     assertThat(orderItem.getPrice()).isEqualTo(new Money(orderItemDto.price()));
                     assertThat(orderItem.getQuantity()).isEqualTo(new Quantity(orderItemDto.quantity()));
                     assertThat(orderItem.getTotalPrice()).isEqualTo(new Money(orderItemDto.totalPrice()));
@@ -110,11 +114,11 @@ class OrderAcceptanceTest {
         stubCustomerFacade.setCustomerExists(true);
     }
 
-    private CreateOrderDto createOrderDto() {
+    private CreateOrderCommand createOrderDto() {
         var items = List.of(new CreateOrderItemDto(UUID.randomUUID(), 2, new BigDecimal("10.00"), new BigDecimal("20.00")),
                 new CreateOrderItemDto(UUID.randomUUID(), 1, new BigDecimal("34.56"), new BigDecimal("34.56")));
         var address = new CreateOrderAddressDto("Małysza", "94-000", "Adasiowo", "12");
-        return new CreateOrderDto(UUID.randomUUID(), new BigDecimal("54.56"), items, address);
+        return new CreateOrderCommand(UUID.randomUUID(), new BigDecimal("54.56"), items, address);
     }
 
     private String getBaseUrl() {

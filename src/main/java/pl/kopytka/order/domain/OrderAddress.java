@@ -18,6 +18,7 @@ public class OrderAddress {
     @Id
     private UUID id;
 
+    @NotBlank
     private String street;
 
     @NotBlank

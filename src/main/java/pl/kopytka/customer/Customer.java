@@ -9,7 +9,7 @@ import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import pl.kopytka.common.CustomerId;
+import pl.kopytka.common.domain.CustomerId;
 
 @Entity(name = "customers")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

@@ -1,6 +1,6 @@
-package pl.kopytka.order.application.dto;
+package pl.kopytka.order.web.dto;
 
-public record OrderAddressDto(
+public record GetOrderAddressDto(
         String street,
         String postCode,
         String city,

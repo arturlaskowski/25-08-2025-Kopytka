@@ -14,7 +14,7 @@ public record CreateOrderRequest(
         @NotNull UUID customerId,
         @NotNull @Min(0) BigDecimal price,
         @Valid @NotNull List<OrderItemRequest> basketItems,
-        @Valid OrderAddressRequest address
+        @Valid OrderAddressRequest deliveryAddress
 ) {
 
     public record OrderItemRequest(

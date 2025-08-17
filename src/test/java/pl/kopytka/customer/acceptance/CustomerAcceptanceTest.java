@@ -8,10 +8,9 @@ import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import pl.kopytka.common.ErrorResponse;
-import pl.kopytka.customer.CustomerService;
-import pl.kopytka.customer.CreateCustomerDto;
-import pl.kopytka.customer.CustomerDto;
+import pl.kopytka.common.web.ErrorResponse;
+import pl.kopytka.common.ExceptionTestUtils;
+import pl.kopytka.customer.*;
 
 import java.util.UUID;
 
@@ -68,12 +67,8 @@ class CustomerAcceptanceTest {
 
         //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
-        assertThat(response.getBody())
-                .isNotNull()
-                .hasNoNullFieldsOrProperties()
-                .extracting("message")
-                .asString()
-                .contains("Could not find customer");
+        ExceptionTestUtils.assertExceptionMessage(response.getBody(), 
+                CustomerNotFoundException.createExceptionMessage(notExistingId));
     }
 
     @Test
@@ -86,7 +81,7 @@ class CustomerAcceptanceTest {
         var createCustomerDto = new CreateCustomerDto("Marianek", "Paździoch", "mario@gemail.com");
 
         //when
-        ResponseEntity<Void> postResponse = restTemplate.postForEntity(getBaseCustomersUrl(), createCustomerDto, Void.class);
+        ResponseEntity<UUID> postResponse = restTemplate.postForEntity(getBaseCustomersUrl(), createCustomerDto, UUID.class);
 
         //then
         assertThat(postResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -118,11 +113,8 @@ class CustomerAcceptanceTest {
         //then
         assertThat(response.getStatusCode()).isEqualTo(HttpStatus.CONFLICT);
         assertThat(response.getHeaders().getLocation()).isNull();
-        assertThat(response.getBody())
-                .isNotNull()
-                .hasNoNullFieldsOrProperties()
-                .extracting("message")
-                .isNotNull();
+        ExceptionTestUtils.assertExceptionMessage(response.getBody(),
+                CustomerAlreadyExistsException.createExceptionMessage(email));
     }
 
     private String getBaseCustomersUrl() {

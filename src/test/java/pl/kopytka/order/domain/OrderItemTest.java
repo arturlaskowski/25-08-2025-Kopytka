@@ -1,8 +1,10 @@
 package pl.kopytka.order.domain;
 
 import org.junit.jupiter.api.Test;
+import pl.kopytka.common.domain.Money;
 
 import java.math.BigDecimal;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -13,7 +15,7 @@ class OrderItemTest {
     @Test
     void shouldCreateOrderItemWithValidParameters() {
         // given
-        var productId = ProductId.newOne();
+        var productId = UUID.randomUUID();
         var price = new Money(new BigDecimal("10.00"));
         var quantity = new Quantity(2);
         var totalPrice = new Money(new BigDecimal("20.00"));
@@ -31,7 +33,7 @@ class OrderItemTest {
     @Test
     void shouldThrowExceptionWhenTotalPriceDoesNotMatchCalculatedPrice() {
         // given
-        var productId = ProductId.newOne();
+        var productId = UUID.randomUUID();
         var price = new Money(new BigDecimal("10.00"));
         var quantity = new Quantity(2);
         var incorrectTotalPrice = new Money(new BigDecimal("25.00"));

@@ -5,14 +5,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import pl.kopytka.common.ErrorResponse;
-import pl.kopytka.order.application.exception.InvalidOrderException;
-import pl.kopytka.order.application.exception.OrderNotFoundException;
+import pl.kopytka.common.web.ErrorResponse;
+import pl.kopytka.order.application.OrderNotFoundException;
+import pl.kopytka.order.application.command.InvalidOrderException;
 import pl.kopytka.order.domain.OrderDomainException;
 
 @RestControllerAdvice
 @SuppressWarnings("JvmTaintAnalysis")
-public class OrderRestApiExceptionHandler {
+class OrderRestApiExceptionHandler {
 
     @ExceptionHandler(value = InvalidOrderException.class)
     public ResponseEntity<ErrorResponse> handleException(InvalidOrderException ex, HttpServletRequest request) {

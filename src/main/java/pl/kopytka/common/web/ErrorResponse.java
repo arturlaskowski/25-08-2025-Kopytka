@@ -1,4 +1,4 @@
-package pl.kopytka.common;
+package pl.kopytka.common.web;
 
 import java.time.Instant;
 

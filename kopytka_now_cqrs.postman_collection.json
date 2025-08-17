@@ -1,0 +1,278 @@
+{
+	"info": {
+		"_postman_id": "6985dff3-ca61-4cc6-ad1c-b010b2b3e939",
+		"name": "KopytkaNow - cqrs",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "5840429"
+	},
+	"item": [
+		{
+			"name": "customer",
+			"item": [
+				{
+					"name": "Customer Service - Create Customer",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var responseHeader = pm.response.headers.get('Location');",
+									"if (responseHeader) {",
+									"    var customerId = responseHeader.split('/').pop();",
+									"    pm.collectionVariables.set(\"customerId\", customerId);",
+									"}",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"Ferdynand\",\n  \"lastName\": \"Kiepski\",\n  \"email\": \"ferdynand.kiepski@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{kopytka_service_url}}/api/customers",
+							"host": [
+								"{{kopytka_service_url}}"
+							],
+							"path": [
+								"api",
+								"customers"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Customer Service - Get Customer",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{kopytka_service_url}}/api/customers/{{customerId}}",
+							"host": [
+								"{{kopytka_service_url}}"
+							],
+							"path": [
+								"api",
+								"customers",
+								"{{customerId}}"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "order",
+			"item": [
+				{
+					"name": "Order Service - Create Order",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var responseHeader = pm.response.headers.get('Location');",
+									"if (responseHeader) {",
+									"    var orderId = responseHeader.split('/').pop();",
+									"    pm.collectionVariables.set(\"orderId\", orderId);",
+									"}",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"customerId\": \"{{customerId}}\",\n    \"deliveryAddress\": {\n        \"street\": \"Krakowska\",\n        \"postCode\": \"30-001\",\n        \"city\": \"Kraków\",\n        \"houseNo\": \"15/4\"\n    },\n    \"price\": 89.50,\n    \"basketItems\": [\n        {\n            \"productId\": \"5e98ec32-d39a-4e1a-a443-c8963d308e59\",\n            \"price\": 25.50,\n            \"quantity\": 2,\n            \"totalPrice\": 51.00\n        },\n        {\n            \"productId\": \"5e98ec32-d39a-4e1a-a443-c8963d308e58\",\n            \"price\": 38.50,\n            \"quantity\": 1,\n            \"totalPrice\": 38.50\n        }\n    ]\n}"
+						},
+						"url": {
+							"raw": "{{kopytka_service_url}}/api/orders",
+							"host": [
+								"{{kopytka_service_url}}"
+							],
+							"path": [
+								"api",
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Order Service - Get Order",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{kopytka_service_url}}/api/orders/{{orderId}}",
+							"host": [
+								"{{kopytka_service_url}}"
+							],
+							"path": [
+								"api",
+								"orders",
+								"{{orderId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Order Service - Get All Orders",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{kopytka_service_url}}/api/orders",
+							"host": [
+								"{{kopytka_service_url}}"
+							],
+							"path": [
+								"api",
+								"orders"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Order Service - Track Order",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{kopytka_service_url}}/api/orders/{{orderId}}/track",
+							"host": [
+								"{{kopytka_service_url}}"
+							],
+							"path": [
+								"api",
+								"orders",
+								"{{orderId}}",
+								"track"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Order Service - Get Pending Orders",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{kopytka_service_url}}/api/orders/pending",
+							"host": [
+								"{{kopytka_service_url}}"
+							],
+							"path": [
+								"api",
+								"orders",
+								"pending"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Order Service - Pay for Order",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{kopytka_service_url}}/api/orders/{{orderId}}/pay",
+							"host": [
+								"{{kopytka_service_url}}"
+							],
+							"path": [
+								"api",
+								"orders",
+								"{{orderId}}",
+								"pay"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Order Service - Approve Order",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{kopytka_service_url}}/api/orders/{{orderId}}/approve",
+							"host": [
+								"{{kopytka_service_url}}"
+							],
+							"path": [
+								"api",
+								"orders",
+								"{{orderId}}",
+								"approve"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "kopytka_service_url",
+			"value": "http://localhost:8580",
+			"type": "string"
+		},
+		{
+			"key": "customerId",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "orderId",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

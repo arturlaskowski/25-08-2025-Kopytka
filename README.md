@@ -1,14 +1,14 @@
-# Modularizacja systemu: Order i Customer jako osobne moduły
+# CQRS - prosty
 
-W tym etapie **Order** i **Customer** stały się osobnymi modułami.  
-Moduł **Customer** nie wie nic o module **Order**.  
-Natomiast moduł **Order** komunikuje się z **Customer** wyłącznie za pomocą jednego punktu - fasady: [CustomerFacade](src/main/java/pl/kopytka/customer/CustomerFacade.java)
+Sam koncept **CQRS** (Command Query Responsibility Segregation) jest stosunkowo prosty, polega na oddzieleniu operacji modyfikujących stan (logika biznesowa) od operacji odczytu.
 
 ---
 
-## Testy
+## Implementacja
+Ten branch zawiera bardzo prostą implementację CQRS dla modułu `order`.
 
-- Testy architektoniczne weryfikują, czy te założenia nie są złamane [ArchitectureTest](src/test/java/pl/kopytka/architecture/ArchitectureTest.java)
-- Testy na najwyższym poziomie zabezpieczają nas, aby zweryfikować, czy refaktoryzacja nie zepsuła obserwowalnego zachowania systemu [CreateOrderEndToEndTest](src/test/java/pl/kopytka/CreateOrderEndToEndTest.java)
+- Pakiet [query](src/main/java/pl/kopytka/order/application/query) zawiera operacje **odczytu**.
+- Pakiet [command](src/main/java/pl/kopytka/order/application/command) zawiera operacje **modyfikacji stanu**.
 
----
+Oddzielenie odbywa się na poziomie warstwy serwisów i repozytoriów.  
+Dzięki temu można zastosować różne strategie testowania, dobrać młotek do problemu :D 

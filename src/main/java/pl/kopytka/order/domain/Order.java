@@ -7,7 +7,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
-import pl.kopytka.common.CustomerId;
+import pl.kopytka.common.domain.CustomerId;
+import pl.kopytka.common.domain.Money;
+import pl.kopytka.common.domain.OrderId;
 
 import java.time.Instant;
 import java.util.List;
@@ -76,7 +78,7 @@ public class Order {
 
         if (!price.equals(itemsTotalCost)) {
             throw new OrderDomainException("Total order price: " + price
-                    + " is different than order items total: " + itemsTotalCost);
+                    + " is different than order basketItems total: " + itemsTotalCost);
         }
     }
 
@@ -95,6 +97,13 @@ public class Order {
         status = PAID;
     }
 
+    public void approve() {
+        if (!isPaidStatus()) {
+            throw new OrderDomainException("The approve operation cannot be performed. Order is in incorrect state");
+        }
+        this.status = OrderStatus.APPROVED;
+    }
+
     public boolean isPendingStatus() {
         return PENDING == status;
     }
@@ -102,4 +111,5 @@ public class Order {
     public boolean isPaidStatus() {
         return PAID == status;
     }
+
 }

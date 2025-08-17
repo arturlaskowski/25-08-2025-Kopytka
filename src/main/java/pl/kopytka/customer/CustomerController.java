@@ -15,15 +15,18 @@ import java.util.UUID;
 class CustomerController {
 
     private final CustomerService customerService;
+    private final CustomerApiMapper customerApiMapper;
 
     @GetMapping("/{id}")
-    public ResponseEntity<CustomerDto> getCustomer(@PathVariable UUID id) {
-        var customerDto = customerService.getCustomer(id);
-        return ResponseEntity.ok(customerDto);
+    public ResponseEntity<CustomerResponse> getCustomer(@PathVariable UUID id) {
+        var customer = customerService.getCustomer(id);
+        var customerResponse = customerApiMapper.toCustomerResponse(customer);
+        return ResponseEntity.ok(customerResponse);
     }
 
     @PostMapping
-    public ResponseEntity<Void> addCustomer(@RequestBody @Valid CreateCustomerDto createCustomerDto) {
+    public ResponseEntity<Void> addCustomer(@RequestBody @Valid CreateCustomerRequest createCustomerRequest) {
+        var createCustomerDto = customerApiMapper.toCreateCustomerDto(createCustomerRequest);
         var customerId = customerService.addCustomer(createCustomerDto);
 
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()

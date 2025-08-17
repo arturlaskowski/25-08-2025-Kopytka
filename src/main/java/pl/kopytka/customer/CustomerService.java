@@ -2,7 +2,7 @@ package pl.kopytka.customer;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import pl.kopytka.common.CustomerId;
+import pl.kopytka.common.domain.CustomerId;
 
 import java.util.UUID;
 
