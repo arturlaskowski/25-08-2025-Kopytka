@@ -3,14 +3,15 @@ package pl.kopytka.order.web.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import pl.kopytka.common.ErrorResponse;
 import pl.kopytka.order.application.exception.InvalidOrderException;
 import pl.kopytka.order.application.exception.OrderNotFoundException;
 import pl.kopytka.order.domain.OrderDomainException;
 
-@ControllerAdvice
+@RestControllerAdvice
+@SuppressWarnings("JvmTaintAnalysis")
 public class OrderRestApiExceptionHandler {
 
     @ExceptionHandler(value = InvalidOrderException.class)
