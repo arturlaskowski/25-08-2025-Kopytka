@@ -11,9 +11,7 @@ import pl.kopytka.order.application.dto.OrderQuery;
 import pl.kopytka.order.application.exception.OrderNotFoundException;
 import pl.kopytka.order.application.integration.customer.CustomerServiceClient;
 import pl.kopytka.order.application.integration.payment.PaymentServiceClient;
-import pl.kopytka.order.domain.Order;
-import pl.kopytka.order.domain.OrderAddress;
-import pl.kopytka.order.domain.OrderItem;
+import pl.kopytka.order.domain.*;
 
 import java.util.Set;
 import java.util.stream.Collectors;

@@ -1,53 +1,25 @@
-# Gateway i Service Discovery w architekturze rozproszonej
+# Dynamiczna komunikacja między mikroserwisami z Feign Client
 
-W architekturze rozproszonej, gdy skalujemy nasz system, musimy zachować **transparentność** dla klientów.  
-Oznacza to, że żądania z zewnątrz powinny trafiać zawsze w jedno miejsce, niezależnie od tego, czy system składa się z jednej aplikacji, czy wielu mikroserwisów.
+Dotychczas mikroserwisy komunikowały się ze sobą, korzystając ze statycznie zdefiniowanych adresów w plikach `application.yml`.
+Takie rozwiązanie jednak nie pozwala na skalowanie systemu ani dynamiczne zwiększanie liczby instancji mikroserwisów.
 
----
+Skoro mamy już wdrożony **Eureka Server** (Discovery Service), który zna wszystkie dostępne instancje mikroserwisów, to możemy wykorzystać te informacje do bardziej elastycznej komunikacji.
 
-## Gateway Pattern
+## Feign Client + Eureka
 
-[Gateway](gateway)
+W tym celu użyliśmy **Feign Clienta** z biblioteki **Spring Cloud**. Feign integruje się z Eureką i umożliwia dynamiczne przekierowywanie żądań przy użyciu wbudowanego load balancera.
+Po naszej stronie wystarczy zadeklarować, do jakiego mikroserwisu chcemy wysłać zapytanie. Nazwa musi odpowiadać wartości konfiguracyjnej tego mikroserwisu:
 
-W celu spełnienia tego wymagania zaimplementowaliśmy **Gateway Pattern** przy użyciu biblioteki **Spring Cloud Gateway**.  
-Usługa gateway działa jako centralny punkt wejścia i przekierowuje ruch do odpowiednich mikroserwisów.
-
-Jednak gateway **nie może zawierać statycznie zaszytych adresów** mikroserwisów, ponieważ mogą one dynamicznie się skalować (powstają nowe instancje).
-
----
-
-## Service Discovery z Eureka
-
-[Eureka Server](eureka)
-
-Dlatego wdrożyliśmy mechanizm **Service Discovery** oparty na **Eureka Server**.  
-Każdy mikroserwis został skonfigurowany jako **Eureka Client**, a Eureka Server rejestruje wszystkie dostępne instancje.
-
-Dzięki temu gateway, współpracując z Eureka Serverem i korzystając z wbudowanego load balancera, może dynamicznie delegować ruch do dowolnej instancji mikroserwisu.
-
-Każdy mikroserwis rejestruje się w Eureka Server z nazwą którą ma podaną w pliku `application.yml`
-```
+```yaml
 spring:
   application:
     name: <NAZWA_USŁUGI>
 ```
 
-I to ta nazwa jest używana do komunikacji z mikroserwisem przez gateway: ([GatewayApplication](gateway/src/main/java/pl/kopytka/GatewayApplication.java)
+To właśnie ta nazwa jest rejestrowana w Eurece. Teraz wystarczy wskazać tylko nazwę usługi, a Feign i load balancer zadbają o to, by ruch został przekierowany do odpowiedniej instancji.
 
----
+## Przykład użycia
 
-## Przykłady
-
-- Konsola Eureka:  
-  [`http://localhost:8070`](http://localhost:8070) – zobacz, jakie usługi są dostępne i w ilu instancjach.
-
-- Przykład wywołań usług:
-
-    - Bezpośrednie wywołanie mikroserwisu (wewnętrzne):  
-      `http://localhost:8581/api/customers`
-
-    - Wywołanie przez gateway (zalecane z zewnątrz):  
-      `http://localhost:9000/api/customers`
-
-Z perspektywy klienta zewnętrznego jedynym znanym adresem jest adres gateway.
-
+Przykładowa implementacja Feign Clienta w module `customer-service`, komunikująca się z `payment-service`:  
+👉 [PaymentServiceFeignClient.java](customer-service/src/main/java/pl/kopytka/customer/application/integration/payment/PaymentServiceFeignClient.java)
+Implementacja tego interfejsu jest już robiona automatycznie przez bibliotekę Feign.

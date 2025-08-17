@@ -13,10 +13,6 @@ spring:
 server:
   port: 8581
 
-services:
-  payment:
-    url: http://localhost:8582
-
 eureka:
   instance:
     preferIpAddress: true  # Preferuj używanie adresu IP zamiast nazwy hosta podczas rejestracji usługi w Eureka
