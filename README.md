@@ -1,50 +1,45 @@
-# Testy kontraktowe
+# Śledzenie procesu w architekturze rozproszonej
 
-## Wprowadzenie
+Aby określić, jak przebiega proces w architekturze rozproszonej, potrzebujemy mechanizmu do jego śledzenia (trackowania).
 
-Testy kontraktowe pozwalają zweryfikować, czy usługi się dogadają po wdrożeniu.
-Z reguły wplatane są w proces CI/CD, ale lokalnie jesteśmy w stanie zweryfikować działanie tego mechanizmu. 
-Kontrakty zostały zaimplementowane za pomocą biblioteki Spring Cloud Contract.
+Przykład:
+- Z zewnątrz przychodzi request do **gateway**, który przekierowuje go do `customer-service`.
+- `customer-service` wywołuje `payment-service`, aby w trakcie tego procesu utworzyć portfel.
+- Jeśli coś się wysypie w `payment-service`, musimy wiedzieć, że ten request pochodził od `customer-service`, a nie bezpośrednio z zewnątrz.
 
-## Przykład 
+Dlatego konieczne jest, aby mieć możliwość **trackowania** całego procesu.
 
-Za przykład nam będzie służył kontrakt między `customer-service` a `payment-service`:
-- **customer-service** komunikuje się z **payment-service**, żeby utworzyć portfel
-- **payment-service** - provider (dostarcza API)
-- **customer-service** - consumer (konsumuje API)
+---
 
-## Pisanie kontraktów
+## Mechanizm trackowania
 
-### Konfiguracja po stronie providera
+W tym celu często stosuje się podejście, gdzie dla każdego procesu generowany jest **unikalny identyfikator** i przekazywany w każdym request i response jako nagłówek HTTP.
 
-W `payment-service` w pliku [pom](payment-service/pom.xml) deklarujemy, że na potrzeby kontraktów będziemy używać klasy  [ContractTestBase.java](payment-service/src/test/java/pl/kopytka/payment/contracts/ContractTestBase.java)
-, która imituje zachowanie aplikacji po to, żeby sprawdzić, czy kontrakty dla API są prawidłowe.
+- Identyfikator może być przyjęty z zewnątrz (jeśli jest podany).
+- Jeśli nie został podany, jest automatycznie generowany w pierwszym miejscu przyjmującym request, czyli zazwyczaj w **gateway**.
+- W przypadku procesów, które nie przechodzą przez gateway, identyfikator jest generowany wewnątrz aplikacji.
 
-### Definiowanie kontraktów po stronie providera
+Dzięki temu możemy śledzić cały przepływ (flow) i łatwo znaleźć miejsce problemu.  
+Na przykład, korzystając z ELK Stack, wystarczy wpisać dany identyfikator, aby zobaczyć pełną ścieżkę przetwarzania danego requestu.
 
-Kontrakty definiujemy w formacie Groovy. Przykład kontraktu do tworzenia portfela:
-📄 [create_wallet.groovy](payment-service/src/test/resources/contracts/customer-service/create_wallet.groovy)
+---
 
+## Implementacja
 
-Po zdefiniowaniu kontraktu uruchamiamy dla providera `mvn install`.
+### Dodawanie nagłówka `X-Trace-Id` i logowanie po stronie gateway
 
-## Testowanie po stronie providera
+Nagłówek `X-Trace-Id` jest dodawany, jeśli nie został podany w przychodzącym request. Dodatkowo trace-id jest logowany.
 
-Na podstawie kontraktów podczas kompilacji automatycznie generowane są:
-1. **Testy jednostkowe dla providera** - można podejrzeć w katalogu `target` w `payment-service`
-2. Jeśli testy przejdą, znaczy to, że provider jest zgodny z kontraktem
-3. Provider automatycznie generuje **stubby (.jar)** które będą używane przez konsumenta API - można podejrzeć w katalogu `target` w `payment-service`
+📄 Gateway: [TraceIdFilter.java](gateway/src/main/java/pl/kopytka/TraceIdFilter.java)
 
-## Testowanie po stronie consumera
-Kolejność lokalnie ma znaczenie, ponieważ najpierw musimy zbudować providera, żeby wygenerował się stub dla consumera. W procesie CI/CD kolejność nie ma już znaczenia,
-ponieważ mikroserwisy są wersjonowane i consumer pobierze odpowiednią wersję stub JAR, np. z Nexusa.
-Consumer używa wygenerowanych stubbów do testowania swojej logiki bez potrzeby uruchamiania prawdziwego serwisu.
-Trzeba jawnie zadeklarować w kodzie, że korzystamy ze stuba innego mikroserwisu.
+### Obsługa po stronie mikroserwisów
 
-**Przykład implementacji**: [PaymentServiceContractTest](customer-service/src/test/java/pl/kopytka/customer/contracts/PaymentServiceContractTest.java)
+#### Dodawanie nagłówka
 
-## Korzyści
+Jeśli nie został podany (nie zawsze wszystko przychodzi z gateway, np. jakiś wewnętrzny proces odpalany przez scheduler):
 
-- **Izolacja testów** - testowanie bez potrzeby uruchamiania wszystkich serwisów
-- **Weryfikacja zgodności** - automatyczne sprawdzenie czy provider i consumer są ze sobą kompatybilne
-- **Integracja z CI/CD** - możliwość automatycznego uruchamiania w pipeline'ie
+📄 [TraceIdFeignInterceptor.java](common/src/main/java/pl/kopytka/common/tracing/TraceIdFeignInterceptor.java)
+
+#### Logowanie trace-id
+
+📄 [LoggingFilter.java](common/src/main/java/pl/kopytka/common/tracing/LoggingFilter.java)

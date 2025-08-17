@@ -1,7 +1,10 @@
 package pl.kopytka.common.config;
 
+import feign.RequestInterceptor;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import pl.kopytka.common.tracing.TraceIdFeignInterceptor;
 
 /**
  * Base configuration for Feign clients.
@@ -10,4 +13,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @EnableFeignClients(basePackages = {"pl.kopytka"})
 public class FeignConfig {
+
+    @Bean
+    public RequestInterceptor traceIdFeignInterceptor() {
+        return new TraceIdFeignInterceptor();
+    }
 }
