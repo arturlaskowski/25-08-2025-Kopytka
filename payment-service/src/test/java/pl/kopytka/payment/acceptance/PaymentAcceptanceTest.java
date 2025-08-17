@@ -11,9 +11,9 @@ import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
-import pl.kopytka.common.web.dto.CreateWalletRequest;
-import pl.kopytka.common.web.dto.MakePaymentRequest;
 import pl.kopytka.payment.web.dto.CancelPaymentRequest;
+import pl.kopytka.payment.web.dto.CreateWalletRequest;
+import pl.kopytka.payment.web.dto.MakePaymentRequest;
 
 import java.math.BigDecimal;
 import java.util.UUID;

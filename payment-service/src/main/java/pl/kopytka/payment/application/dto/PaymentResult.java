@@ -1,4 +1,4 @@
-package pl.kopytka.common.web.dto;
+package pl.kopytka.payment.application.dto;
 
 import java.util.UUID;
 

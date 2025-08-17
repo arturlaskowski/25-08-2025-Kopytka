@@ -5,11 +5,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pl.kopytka.common.domain.valueobject.CustomerId;
 import pl.kopytka.common.domain.valueobject.Money;
-import pl.kopytka.common.web.dto.CreateWalletRequest;
 import pl.kopytka.payment.application.exception.WalletAlreadyExistsException;
 import pl.kopytka.payment.application.exception.WalletNotFoundException;
 import pl.kopytka.payment.domain.Wallet;
 import pl.kopytka.payment.domain.WalletId;
+import pl.kopytka.payment.web.dto.CreateWalletRequest;
 import pl.kopytka.payment.web.dto.WalletDto;
 
 @Service

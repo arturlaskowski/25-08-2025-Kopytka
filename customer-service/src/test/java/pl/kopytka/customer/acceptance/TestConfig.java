@@ -1,4 +1,4 @@
-package pl.kopytka.customer;
+package pl.kopytka.customer.acceptance;
 
 import org.mockito.Mockito;
 import org.springframework.boot.test.context.TestConfiguration;
@@ -6,7 +6,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
 import pl.kopytka.common.domain.valueobject.CustomerId;
 import pl.kopytka.customer.application.integration.payment.PaymentServiceClient;
-
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;

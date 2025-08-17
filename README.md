@@ -1,27 +1,50 @@
-# Obsługa cyklicznych zadań w środowisku rozproszonym
+# Testy kontraktowe
 
-Podczas skalowania aplikacji i korzystania z mechanizmów wykonywania cyklicznych operacji, musimy zadbać o to, aby procesy, które mają wykonać się tylko raz, faktycznie wykonały się tylko raz.
+## Wprowadzenie
 
-**Przykład:**  
-Jeśli użyjemy adnotacji `@Scheduled` i ustawimy generowanie raportu co godzinę, a nasz mikroserwis działa w pięciu instancjach, to raport wygeneruje się pięć razy — po jednym razie na każdej instancji.
-Może to powodować nadmiarowe operacje i problemy, zwłaszcza gdy zadanie modyfikuje stan (np. przetwarza płatności).
+Testy kontraktowe pozwalają zweryfikować, czy usługi się dogadają po wdrożeniu.
+Z reguły wplatane są w proces CI/CD, ale lokalnie jesteśmy w stanie zweryfikować działanie tego mechanizmu. 
+Kontrakty zostały zaimplementowane za pomocą biblioteki Spring Cloud Contract.
 
-Aby uniknąć takich sytuacji, stosujemy **distributed lock** — czyli mechanizm, który zapewnia, że konkretne zadanie cykliczne zostanie wykonane tylko raz w skali całego 'klastra', niezależnie od liczby instancji mikroserwisu.
+## Przykład 
 
----
+Za przykład nam będzie służył kontrakt między `customer-service` a `payment-service`:
+- **customer-service** komunikuje się z **payment-service**, żeby utworzyć portfel
+- **payment-service** - provider (dostarcza API)
+- **customer-service** - consumer (konsumuje API)
 
-## ShedLock
+## Pisanie kontraktów
 
-W tym celu do systemu została dodana biblioteka **ShedLock**, która umożliwia realizację blokad rozproszonych.
+### Konfiguracja po stronie providera
 
-Konfiguracja jest parametryzowana — mikroserwis, który potrzebuje obsługi cyklicznych zadań, może włączyć tę funkcję za pomocą właściwości:
-`kopytka.scheduling.enabled=true`[Klasa konfiguracyjna](common/src/main/java/pl/kopytka/common/config/SchedulingConfig.java)
-To podejście pozwala na łatwe włączenie lub wyłączenie obsługi cyklicznych zadań np. na potrzeby testów innych komponentów.
+W `payment-service` w pliku [pom](payment-service/pom.xml) deklarujemy, że na potrzeby kontraktów będziemy używać klasy  [ContractTestBase.java](payment-service/src/test/java/pl/kopytka/payment/contracts/ContractTestBase.java)
+, która imituje zachowanie aplikacji po to, żeby sprawdzić, czy kontrakty dla API są prawidłowe.
 
-ShedLock potrzebuje tabeli w bazie danych, która pozwala mu sprawdzać, czy dane zadanie cykliczne jest aktualnie wykonywane, czy można je zablokować i uruchomić.  
-Schemat tabeli znajdziesz tutaj:  
-👉 [Schemat tabeli](payment-service/src/main/resources/schema.sql)
+### Definiowanie kontraktów po stronie providera
 
-Aby użyć blokowania z wykorzystaniem ShedLock, należy oznaczyć cykliczną metodę adnotacją `@SchedulerLock`.  
-Przykład implementacji znajduje się w klasie:  
-👉 [PaymentReprocessorService](payment-service/src/main/java/pl/kopytka/payment/application/PaymentReprocessorService.java)
+Kontrakty definiujemy w formacie Groovy. Przykład kontraktu do tworzenia portfela:
+📄 [create_wallet.groovy](payment-service/src/test/resources/contracts/customer-service/create_wallet.groovy)
+
+
+Po zdefiniowaniu kontraktu uruchamiamy dla providera `mvn install`.
+
+## Testowanie po stronie providera
+
+Na podstawie kontraktów podczas kompilacji automatycznie generowane są:
+1. **Testy jednostkowe dla providera** - można podejrzeć w katalogu `target` w `payment-service`
+2. Jeśli testy przejdą, znaczy to, że provider jest zgodny z kontraktem
+3. Provider automatycznie generuje **stubby (.jar)** które będą używane przez konsumenta API - można podejrzeć w katalogu `target` w `payment-service`
+
+## Testowanie po stronie consumera
+Kolejność lokalnie ma znaczenie, ponieważ najpierw musimy zbudować providera, żeby wygenerował się stub dla consumera. W procesie CI/CD kolejność nie ma już znaczenia,
+ponieważ mikroserwisy są wersjonowane i consumer pobierze odpowiednią wersję stub JAR, np. z Nexusa.
+Consumer używa wygenerowanych stubbów do testowania swojej logiki bez potrzeby uruchamiania prawdziwego serwisu.
+Trzeba jawnie zadeklarować w kodzie, że korzystamy ze stuba innego mikroserwisu.
+
+**Przykład implementacji**: [PaymentServiceContractTest](customer-service/src/test/java/pl/kopytka/customer/contracts/PaymentServiceContractTest.java)
+
+## Korzyści
+
+- **Izolacja testów** - testowanie bez potrzeby uruchamiania wszystkich serwisów
+- **Weryfikacja zgodności** - automatyczne sprawdzenie czy provider i consumer są ze sobą kompatybilne
+- **Integracja z CI/CD** - możliwość automatycznego uruchamiania w pipeline'ie

@@ -33,6 +33,7 @@
         <lombok-mapstruct-binding.version>0.2.0</lombok-mapstruct-binding.version>
         <io.hypersistence-63.version>3.10.1</io.hypersistence-63.version>
         <spring-cloud.version>2025.0.0</spring-cloud.version>
+        <spring-cloud-contract.version>4.2.0</spring-cloud-contract.version>
         <shedlock-spring.version>6.9.0</shedlock-spring.version>
     </properties>
 
@@ -97,6 +98,16 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-contract-stub-runner</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-contract-verifier</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>

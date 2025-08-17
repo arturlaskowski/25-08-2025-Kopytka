@@ -1,4 +1,4 @@
-package pl.kopytka.customer;
+package pl.kopytka.customer.acceptance;
 
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;

@@ -9,8 +9,6 @@ import pl.kopytka.common.domain.valueobject.CustomerId;
 import pl.kopytka.common.domain.valueobject.Money;
 import pl.kopytka.common.domain.valueobject.OrderId;
 import pl.kopytka.common.web.ServiceUnavailableException;
-import pl.kopytka.common.web.dto.MakePaymentRequest;
-import pl.kopytka.common.web.dto.PaymentResult;
 
 @Component
 @RequiredArgsConstructor

@@ -1,4 +1,4 @@
-package pl.kopytka.customer;
+package pl.kopytka.customer.acceptance;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
