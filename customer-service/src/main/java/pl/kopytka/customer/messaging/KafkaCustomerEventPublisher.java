@@ -20,7 +20,8 @@ class KafkaCustomerEventPublisher implements CustomerEventPublisher {
     @Override
     public void publish(CustomerEvent customerEvent) {
         var customerId = customerEvent.getCustomer().getCustomerId().id();
-        var customerEventAvroModel = new CustomerEventAvroModel(UUID.randomUUID(), customerId,
+        var customerEventAvroModel = new CustomerEventAvroModel(UUID.randomUUID(),
+                customerId, customerEvent.getCustomer().getEmail(),
                 CustomerEventType.CUSTOMER_CREATED, customerEvent.getCreatedAt());
 
         kafkaProducer.send(topicsConfigData.getCustomerEvent(),

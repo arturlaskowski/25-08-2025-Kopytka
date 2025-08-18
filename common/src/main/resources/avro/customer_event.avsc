@@ -18,6 +18,10 @@
       }
     },
     {
+      "name": "email",
+      "type": "string"
+    },
+    {
       "name": "type",
       "type": {
         "type": "enum",

@@ -1,63 +1,33 @@
-# Inbox Pattern - Kopytka
+# State Transfer Event - A duplikacja wiadomości na message brocker
 
-Ten branch pokazuje przykładową implementację wzorca **Inbox Pattern**,
-czyli stworzenie idempotentnego konsumenta wiadomości (wiadomość zostanie przetworzona tylko raz).
+W przypadku podejścia **state transfer event**, gdzie replikujemy cały stan na potrzeby optymalizacji odczytu, nie musimy używać wzorca *Inbox Pattern*.
+Możemy zamiast tego polegać na wersjonowaniu zasobu (JPA).
 
-W świecie marketingu można usłyszeć o gwarancji dostarczania wiadomości w stylu *exactly-once delivery*.  
-W rzeczywistości taki mechanizm nie istnieje.  
-Dlatego w architekturach rozproszonych często implementuje się rozwiązanie znane jako
-**exactly-once processing**, które składa się z:
-* *at-least-once delivery* po stronie brokera oraz
-* idempotentnego konsumenta wiadomości (czyli Inbox Pattern).
+Taki warunek po stronie konsumenta **załatwia problem duplikacji wiadomości**:
+```java
+if (event.version > currentResource.version) {
+    apply(event);
+} else {
+    ignore(event); // duplikat albo stary event
+}
+```
 
-W praktyce oznacza to, że broker gwarantuje, iż wiadomość zostanie dostarczona **co najmniej raz**,  
-a po stronie konsumenta znajduje się mechanizm, który zapewnia, że każda wiadomość zostanie przetworzona **tylko raz**.
+Na tym branch za przykład może posłużyć replikowanie informacji o produkcie z serwisu `restaurant-service` do nowego mikroserwisu `product-search-service`,
+który powstał na potrzeby optymalizacji odczytu.
 
-W celu realizacji tego podejścia w każdym mikroserwisie powstała tabela `inbox_entries` ([pakiet-inbox](common/src/main/java/pl/kopytka/common/inbox)),  
-a listener [IdempotentKafkaConsumer](common/src/main/java/pl/kopytka/common/kafka/consumer/IdempotentKafkaConsumer.java), wykorzystujący tę tabelę, został użyty wszędzie tam,
-gdzie stosowane jest podejście **notification event**.
+Przykład implementacji konsumenta takich eventów znajdziesz tutaj:
+[RestaurantChangedStateEventListener](product-search-service/src/main/java/pl/kopytka/customer/RestaurantChangedStateEventListener.java)
 
-Oczywiście to, czy potrzebujemy idempotentnego konsumenta, zależy od konkretnego przypadku.  
-Czasami przed duplikacją chroni nas sama logika biznesowa,  
-a czasami duplikacja nie stanowi problemu — np. gdy replikujemy cały stan na potrzeby odczytu, czyli wysyłamy *state transfer event* (CQRS) → będzie na następnym branchu.
+Oczywiście po stronie odczytu struktura danych w bazie może się różnić od tej po stronie modyfikacji stanu (tak jak tu).
+Co więcej, możemy użyć innego rodzaju bazy danych.
 
-Tworząc tabelę, która przechowuje `messageId` wiadomości, warto zadbać o jej cykliczne czyszczenie, aby nie "puchła".  
-Można to zrealizować prostym schedulerem: [InboxCleaner](common/src/main/java/pl/kopytka/common/inbox/InboxCleaner.java)  
-Testy: [InboxCleanupIntegrationTest](common/src/test/java/pl/kopytka/common/inbox/InboxCleanupIntegrationTest.java)
+Emitowanie **state transfer event** jest najczęściej realizowane automatycznie po każdej zmianie stanu – nie emitujemy eventu jawnie w kodzie, 
+lecz korzystamy z podejścia, które nasłuchuje na zmiany i samo emituje event. 
+W Spring Data możemy skorzystać z adnotacji `@EntityListener`, np.:
+[RestaurantEntityListener](restaurant-service/src/main/java/pl/kopytka/restaurant/domain/RestaurantEntityListener.java)
 
-# Stawianie środowiska (dla przypomnienia)
-
-* **Uruchom infrastrukturę** za pomocą pliku [docker-compose](infrastructure/docker-compose.yml).
-
-* **GUI do Kafki**
-  Po uruchomieniu, pod adresem [http://localhost:8080/](http://localhost:8080/) dostępne jest GUI do Kafki z podłączonym Schema Registry. Możesz tam weryfikować, jakie wiadomości pojawiły się na poszczególnych topicach.
-
----
-
-### Baza danych
-
-Każda baza danych to osobny schemat. Zapewnia to separację, oszczędza lokalnie zasoby, a w środowisku wdrożeniowym pozwala korzystać z oddzielnych baz danych.
-Po zalogowaniu się do bazy jako użytkownik `admin_user` z hasłem `admin_password` (`jdbc:postgresql://localhost:5432/kopytkadb`), masz dostęp do wszystkich schematów.
-
----
-
-### PgAdmin (opcjonalnie)
-
-Jeśli nie korzystasz z IntelliJ w wersji Ultimate, możesz użyć **pgAdmina** do zarządzania bazą danych.
-Aby go uruchomić, użyj pliku [docker-compose.pgadmin.yml](infrastructure/docker-compose.pgadmin.yml).
-
-Po uruchomieniu (po około minucie) będzie dostępny pod adresem:
-[http://localhost:5050](http://localhost:5050)
-
-Baza danych **kopytkaDb** powinna być już skonfigurowana.
-Jeśli pojawi się okno z prośbą o ustawienie hasła lub danych dostępowych wpisz `postgres`.
-
-
-### Czyszczenie infrastruktury
-
-Polecenie z pliku [docker-clean.sh](infrastructure/docker-clean.sh) usuwa całą infrastrukturę.
-Zwalnia to zasoby i zapobiega kolizjom przy przełączaniu się na projekt **Punktozaur**.
-
-Jeśli stworzyłeś lub zmodyfikowałeś schematy Avro dla wiadomości ([resources-avro](common/src/main/resources/avro)), to usuń katalog
-[avro](common/src/main/java/pl/kopytka/avro) i ponownie skompiluj projekt common, np. używając polecenia `mvn compile`.
+Warto zwrócić uwagę, że dzięki temu podejściu eventy są emitowane **dopiero po commicie do bazy danych**,
+poprzez adnotacje `@PostPersist` i `@PostUpdate`.
+To daje nam gwarancję, że zmiany w bazie danych zostały już wykonane. 
+W naszych innych emitowanych eventach **takiej gwarancji nie mamy**! (coś powinniśmy z tym zrobić :)
 

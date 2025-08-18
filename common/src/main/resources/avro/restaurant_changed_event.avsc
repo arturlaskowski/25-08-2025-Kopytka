@@ -1,0 +1,62 @@
+{
+  "namespace": "pl.kopytka.avro.restaurant",
+  "type": "record",
+  "name": "RestaurantChangedEventAvroModel",
+  "fields": [
+    {
+      "name": "restaurantId",
+      "type": {
+        "type": "string",
+        "logicalType": "uuid"
+      }
+    },
+    {
+      "name": "name",
+      "type": "string"
+    },
+    {
+      "name": "available",
+      "type": "boolean"
+    },
+    {
+      "name": "version",
+      "type": "int"
+    },
+    {
+      "name": "products",
+      "type": {
+        "type": "array",
+        "items": {
+          "type": "record",
+          "name": "RestaurantProduct",
+          "fields": [
+            {
+              "name": "id",
+              "type": {
+                "type": "string",
+                "logicalType": "uuid"
+              }
+            },
+            {
+              "name": "name",
+              "type": "string"
+            },
+            {
+              "name": "price",
+              "type": {
+                "type": "bytes",
+                "logicalType": "decimal",
+                "precision": 10,
+                "scale": 2
+              }
+            },
+            {
+              "name": "available",
+              "type": "boolean"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

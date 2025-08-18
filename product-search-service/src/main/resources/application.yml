@@ -1,30 +1,33 @@
 spring:
   application:
-    name: restaurant-service
+    name: product-search-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/kopytkadb?currentSchema=restaurant_schema
+    url: jdbc:postgresql://localhost:5432/kopytkadb?currentSchema=product_search_schema
     driver-class-name: org.postgresql.Driver
-    username: restaurant_user
-    password: restaurant_password
+    username: product_search_user
+    password: product_search_password
   jpa:
     hibernate:
       ddl-auto: update
-    #    show-sql: true
+#    show-sql: true
     open-in-view: false
     properties:
       hibernate:
-        "[default_schema]": restaurant_schema
+        "[default_schema]": product_search_schema
         "[format_sql]": true
 
 server:
-  port: 8583
+  port: 8584
 
-restaurant-service:
+# Kopytka configurations  
+kopytka:
+  scheduling:
+    enabled: false  # No scheduled tasks in product search service
+
+product-search-service:
   kafka:
-    group-id: restaurant-topic-consumer
+    group-id: product-search-topic-consumer
     topics:
-      restaurant-order-command: restaurant-order-commands
-      restaurant-order-event: restaurant-order-events
       restaurant-state-event: restaurant-state-events
 
 kafka-config:

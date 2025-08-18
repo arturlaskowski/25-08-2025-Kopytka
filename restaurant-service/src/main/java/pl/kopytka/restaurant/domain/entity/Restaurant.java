@@ -1,10 +1,7 @@
 package pl.kopytka.restaurant.domain.entity;
 
 import io.hypersistence.utils.hibernate.type.json.JsonType;
-import jakarta.persistence.Column;
-import jakarta.persistence.EmbeddedId;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Version;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -13,6 +10,7 @@ import org.hibernate.annotations.Type;
 import pl.kopytka.common.domain.valueobject.Money;
 import pl.kopytka.common.domain.valueobject.ProductId;
 import pl.kopytka.common.domain.valueobject.RestaurantId;
+import pl.kopytka.restaurant.domain.RestaurantEntityListener;
 import pl.kopytka.restaurant.domain.exception.RestaurantDomainException;
 
 import java.util.Collections;
@@ -23,6 +21,7 @@ import java.util.UUID;
 @Entity(name = "restaurants")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@EntityListeners(RestaurantEntityListener.class)
 public class Restaurant {
 
     @EmbeddedId
