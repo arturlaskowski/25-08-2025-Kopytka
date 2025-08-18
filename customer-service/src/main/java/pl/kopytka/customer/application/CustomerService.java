@@ -4,13 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.kopytka.common.domain.event.DomainEventPublisher;
 import pl.kopytka.common.domain.valueobject.CustomerId;
 import pl.kopytka.customer.application.dto.CustomerDto;
 import pl.kopytka.customer.application.exception.CustomerAlreadyExistsException;
 import pl.kopytka.customer.application.exception.CustomerNotFoundException;
 import pl.kopytka.customer.domain.Customer;
-import pl.kopytka.customer.domain.CustomerEventPublisher;
 import pl.kopytka.customer.domain.event.CustomerCreatedEvent;
+import pl.kopytka.customer.domain.event.CustomerEvent;
 import pl.kopytka.customer.web.dto.CreateCustomerDto;
 
 import java.util.UUID;
@@ -21,7 +22,7 @@ import java.util.UUID;
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
-    private final CustomerEventPublisher customerEventPublisher;
+    private final DomainEventPublisher<CustomerEvent> eventPublisher;
 
     public CustomerDto getCustomer(UUID id) {
         CustomerId customerId = new CustomerId(id);
@@ -39,7 +40,7 @@ public class CustomerService {
         var customer = new Customer(customerDto.firstName(), customerDto.lastName(), customerDto.email());
         CustomerId customerId = customerRepository.save(customer).getCustomerId();
         var customerCreatedEvent = new CustomerCreatedEvent(customer);
-        customerEventPublisher.publish(customerCreatedEvent);
+        eventPublisher.publish(customerCreatedEvent);
 
         return customerId;
     }

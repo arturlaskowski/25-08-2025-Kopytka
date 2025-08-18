@@ -3,9 +3,10 @@ package pl.kopytka.payment.messaging;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionalEventListener;
 import pl.kopytka.avro.payment.*;
-import pl.kopytka.payment.domain.PaymentEventPublisher;
 import pl.kopytka.payment.domain.Payment;
 import pl.kopytka.payment.domain.event.PaymentCanceledEvent;
 import pl.kopytka.payment.domain.event.PaymentCompletedEvent;
@@ -17,13 +18,14 @@ import java.util.UUID;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-class KafkaPaymentEventPublisher implements PaymentEventPublisher {
+class KafkaPaymentEventPublisher {
 
     private final KafkaTemplate<String, PaymentEventAvroModel> kafkaTemplate;
     private final TopicsConfigData topicsConfigData;
 
-    @Override
-    public void publish(PaymentEvent event) {
+    @TransactionalEventListener
+    @Async
+    public void handleEventAfterCommitAndSendToKafka(PaymentEvent event) {
         switch (event) {
             case PaymentCompletedEvent completedEvent -> publishPaymentCompletedEvent(completedEvent);
             case PaymentRejectedEvent rejectedEvent -> publishPaymentFailedEvent(rejectedEvent);

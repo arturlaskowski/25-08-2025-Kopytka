@@ -8,3 +8,4 @@ import pl.kopytka.common.domain.valueobject.OrderId;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, OrderId> {
 }
+

@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.kopytka.common.domain.event.DomainEventPublisher;
 import pl.kopytka.common.domain.valueobject.*;
 import pl.kopytka.order.application.dto.CreateOrderCommand;
 import pl.kopytka.order.application.dto.OrderQuery;
@@ -12,7 +13,6 @@ import pl.kopytka.order.application.exception.OrderNotFoundException;
 import pl.kopytka.order.application.replicaiton.CustomerViewService;
 import pl.kopytka.order.domain.Order;
 import pl.kopytka.order.domain.OrderAddress;
-import pl.kopytka.order.domain.OrderEventPublisher;
 import pl.kopytka.order.domain.OrderItem;
 import pl.kopytka.order.domain.event.*;
 
@@ -27,7 +27,7 @@ public class OrderApplicationService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
     private final CustomerViewService customerViewService;
-    private final OrderEventPublisher orderEventPublisher;
+    private final DomainEventPublisher<OrderEvent> eventPublisher;
 
     @Transactional
     public OrderId createOrder(CreateOrderCommand command) {
@@ -42,7 +42,7 @@ public class OrderApplicationService {
         var order = mapToOrder(command, customerId);
         var saveOrder = orderRepository.save(order);
 
-        orderEventPublisher.publish(new OrderCreatedEvent(order));
+        eventPublisher.publish(new OrderCreatedEvent(order));
 
         return saveOrder.getId();
     }
@@ -53,7 +53,7 @@ public class OrderApplicationService {
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
         order.pay();
-        orderEventPublisher.publish(new OrderPaidEvent(order));
+        eventPublisher.publish(new OrderPaidEvent(order));
     }
 
     @Transactional
@@ -62,7 +62,7 @@ public class OrderApplicationService {
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
         order.approve();
-        orderEventPublisher.publish(new OrderApprovedEvent(order));
+        eventPublisher.publish(new OrderApprovedEvent(order));
     }
 
     @Transactional
@@ -71,7 +71,7 @@ public class OrderApplicationService {
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
         order.cancel(failureMessage);
-        orderEventPublisher.publish(new OrderCanceledEvent(order));
+        eventPublisher.publish(new OrderCanceledEvent(order));
     }
 
     @Transactional
@@ -80,7 +80,7 @@ public class OrderApplicationService {
                 .orElseThrow(() -> new OrderNotFoundException(orderId));
 
         order.initCancel(failureMessage);
-        orderEventPublisher.publish(new OrderCancelInitiatedEvent(order));
+        eventPublisher.publish(new OrderCancelInitiatedEvent(order));
     }
 
     @Transactional(readOnly = true)

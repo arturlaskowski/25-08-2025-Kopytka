@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.kopytka.common.domain.event.DomainEventPublisher;
 import pl.kopytka.common.domain.valueobject.CustomerId;
 import pl.kopytka.common.domain.valueobject.Money;
 import pl.kopytka.common.domain.valueobject.OrderId;
@@ -11,7 +12,11 @@ import pl.kopytka.payment.application.dto.CancelPaymentCommand;
 import pl.kopytka.payment.application.dto.MakePaymentCommand;
 import pl.kopytka.payment.application.exception.PaymentNotFoundException;
 import pl.kopytka.payment.application.exception.WalletNotFoundException;
-import pl.kopytka.payment.domain.*;
+import pl.kopytka.payment.domain.Payment;
+import pl.kopytka.payment.domain.PaymentDomainException;
+import pl.kopytka.payment.domain.PaymentDomainService;
+import pl.kopytka.payment.domain.Wallet;
+import pl.kopytka.payment.domain.event.PaymentEvent;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +26,7 @@ public class PaymentApplicationService {
     private final PaymentRepository paymentRepository;
     private final WalletRepository walletRepository;
     private final PaymentDomainService paymentDomainService;
-    private final PaymentEventPublisher paymentEventPublisher;
+    private final DomainEventPublisher<PaymentEvent> eventPublisher;
 
     @Transactional
     public void makePayment(MakePaymentCommand command) {
@@ -44,7 +49,7 @@ public class PaymentApplicationService {
 
         var paymentEvent = paymentDomainService.makePayment(payment, wallet);
         paymentRepository.save(payment);
-        paymentEventPublisher.publish(paymentEvent);
+        eventPublisher.publish(paymentEvent);
     }
 
     @Transactional
@@ -67,6 +72,6 @@ public class PaymentApplicationService {
 
         paymentRepository.save(payment);
         walletRepository.save(wallet);
-        paymentEventPublisher.publish(paymentEvent);
+        eventPublisher.publish(paymentEvent);
     }
 }

@@ -1,33 +1,57 @@
-# State Transfer Event - A duplikacja wiadomości na message brocker
+## Kolejność operacji: zapis do bazy a wysyłanie wiadomości
 
-W przypadku podejścia **state transfer event**, gdzie replikujemy cały stan na potrzeby optymalizacji odczytu, nie musimy używać wzorca *Inbox Pattern*.
-Możemy zamiast tego polegać na wersjonowaniu zasobu (JPA).
+Gdy wykonujemy zmianę na zasobie, a następnie chcemy wyemitować zdarzenie informujące o dokonanej zmianie, musimy pamiętać, że **transakcja w Springu zamyka się po wyjściu z metody**, jeśli korzystamy z adnotacji `@Transactional`.
 
-Taki warunek po stronie konsumenta **załatwia problem duplikacji wiadomości**:
-```java
-if (event.version > currentResource.version) {
-    apply(event);
-} else {
-    ignore(event); // duplikat albo stary event
-}
+Jeżeli w takiej metodzie wywołamy `kafkaProducer.send`, może się zdarzyć, że wiadomość zostanie wysłana do brokera, ale zapis do bazy danych się nie powiedzie, np. z powodu ograniczeń (`constraint`) lub blokady optymistycznej (`optimistic lock`).
+
+---
+
+## Problem i rozwiązanie
+
+Chcielibyśmy mieć pewność, że próba wysłania wiadomości na brokera nastąpi **dopiero po zatwierdzeniu (commit) transakcji bazodanowej**.
+
+Możemy to osiągnąć na kilka sposobów:
+
+* W przypadku **replikacji (state transfer event)** można oprzeć się na mechanizmie `@EntityListener`. Przykład: [RestaurantEntityListener](restaurant-service/src/main/java/pl/kopytka/restaurant/domain/RestaurantEntityListener.java).
+* W przypadku **notification event** warto zadeklarować to jawnie w kodzie. Aby wiadomość została wysłana dopiero po zatwierdzeniu transakcji, można użyć mechanizmu `ApplicationEventPublisher`.
+
+---
+
+## Użycie `ApplicationEventPublisher`
+
+Metodę nasłuchującą na emitowane zdarzenie należy oznaczyć adnotacją:
+
+```
+@TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
 ```
 
-Na tym branch za przykład może posłużyć replikowanie informacji o produkcie z serwisu `restaurant-service` do nowego mikroserwisu `product-search-service`,
-który powstał na potrzeby optymalizacji odczytu.
+Oznacza to, że zdarzenie zostanie przetworzone **dopiero po zatwierdzeniu transakcji** w metodzie, która je wyemitowała.
+Domyślnie `@TransactionalEventListener` używa `phase = TransactionPhase.AFTER_COMMIT`, więc jawne deklarowanie `phase` jest opcjonalne.
 
-Przykład implementacji konsumenta takich eventów znajdziesz tutaj:
-[RestaurantChangedStateEventListener](product-search-service/src/main/java/pl/kopytka/customer/RestaurantChangedStateEventListener.java)
+W Springu może występować wiele zagnieżdżonych transakcji. Samo `phase = TransactionPhase.AFTER_COMMIT` oznacza, że listener wykona się po zakończeniu transakcji, ale jeśli istniała transakcja nadrzędna, może ona wpłynąć na wycofanie listenera.
+Aby mieć pewność, że transakcja nadrzędna go nie wycofa, można uruchomić listener w osobnej transakcji, np.:
 
-Oczywiście po stronie odczytu struktura danych w bazie może się różnić od tej po stronie modyfikacji stanu (tak jak tu).
-Co więcej, możemy użyć innego rodzaju bazy danych.
+```
+@Transactional(propagation = REQUIRES_NEW)
+```
 
-Emitowanie **state transfer event** jest najczęściej realizowane automatycznie po każdej zmianie stanu – nie emitujemy eventu jawnie w kodzie, 
-lecz korzystamy z podejścia, które nasłuchuje na zmiany i samo emituje event. 
-W Spring Data możemy skorzystać z adnotacji `@EntityListener`, np.:
-[RestaurantEntityListener](restaurant-service/src/main/java/pl/kopytka/restaurant/domain/RestaurantEntityListener.java)
+Jednak tworzenie nowej transakcji dla operacji, która nie modyfikuje bazy, może generować nadmierny narzut. Dlatego często stosuje się **@Async**, czyli uruchomienie listenera w osobnym wątku po commicie bazodanowym, niezależnym od transakcji nadrzędnej.
+Tak zostało to zrealizowane w tym branchu.
 
-Warto zwrócić uwagę, że dzięki temu podejściu eventy są emitowane **dopiero po commicie do bazy danych**,
-poprzez adnotacje `@PostPersist` i `@PostUpdate`.
-To daje nam gwarancję, że zmiany w bazie danych zostały już wykonane. 
-W naszych innych emitowanych eventach **takiej gwarancji nie mamy**! (coś powinniśmy z tym zrobić :)
+Aby asynchroniczność działała, należy dodać:
 
+```
+@EnableAsync
+```
+
+do klasy konfiguracyjnej Springa: [Konfiguracja publishera](common/src/main/java/pl/kopytka/common/config/DomainEventPublisherConfiguration.java).
+
+---
+
+Na tym branchu wszystkie **notification event** zostały przerobione na to podejście.
+
+Przykładowo, emitowanie wiadomości odbywa się za pomocą `EventsPublisher`, który korzysta z `ApplicationEventPublisher`:
+[PaymentApplicationService](payment-service/src/main/java/pl/kopytka/payment/application/PaymentApplicationService.java)
+
+Przechwytywanie tej wiadomości po zatwierdzeniu transakcji i publikowanie zdarzenia na brokera:
+[KafkaPaymentEventPublisher](payment-service/src/main/java/pl/kopytka/payment/messaging/KafkaPaymentEventPublisher.java)

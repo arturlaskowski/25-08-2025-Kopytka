@@ -14,6 +14,9 @@ import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
 
+import static jakarta.persistence.CascadeType.ALL;
+import static jakarta.persistence.FetchType.EAGER;
+
 @Entity(name = "orders")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Getter
@@ -26,7 +29,7 @@ public class Order {
 
     private RestaurantId restaurantId;
 
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = ALL)
     @JoinColumn(name = "delivery_address_id", referencedColumnName = "id")
     private OrderAddress deliveryAddress;
 
@@ -41,7 +44,7 @@ public class Order {
     @Column(name = "creation_date")
     private Instant creationDate;
 
-    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "order", cascade = ALL, fetch = EAGER)
     private Set<OrderItem> basket = new HashSet<>();
 
     @Column(name = "failure_messages", length = 2000)

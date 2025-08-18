@@ -15,6 +15,7 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Import({
         SchedulingConfig.class,
+        DomainEventPublisherConfiguration.class
 })
 @ComponentScan("pl.kopytka")
 @EnableJpaRepositories(basePackages = "pl.kopytka")

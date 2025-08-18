@@ -2,21 +2,23 @@ package pl.kopytka.order.messaging;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import pl.kopytka.order.domain.OrderEventPublisher;
+import org.springframework.transaction.event.TransactionalEventListener;
 import pl.kopytka.order.domain.event.*;
 import pl.kopytka.order.saga.OrderSagaDispatcher;
 
 @Component
 @RequiredArgsConstructor
 @Slf4j
-class KafkaOrderEventPublisher implements OrderEventPublisher {
+class KafkaOrderEventPublisher {
 
     private final OrderSagaDispatcher orderSagaDispatcher;
 
     // Gdyby orchestrator sagi znajdował się w innym module, te eventy byłyby normalnie publikowane na Kafkę.
     // Jednak ponieważ znajduje się w tym samym module, można bezpośrednio wywołać komponent sagi.
-    @Override
+    @TransactionalEventListener
+    @Async
     public void publish(OrderEvent event) {
         switch (event) {
             case OrderCreatedEvent createdEvent -> orderSagaDispatcher.handle(createdEvent);

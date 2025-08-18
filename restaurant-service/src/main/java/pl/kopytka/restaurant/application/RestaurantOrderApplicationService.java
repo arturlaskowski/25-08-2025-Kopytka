@@ -4,15 +4,16 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import pl.kopytka.common.domain.event.DomainEventPublisher;
 import pl.kopytka.common.domain.valueobject.OrderId;
 import pl.kopytka.common.domain.valueobject.ProductId;
 import pl.kopytka.common.domain.valueobject.RestaurantId;
 import pl.kopytka.restaurant.application.dto.ProductDto;
-import pl.kopytka.restaurant.domain.RestaurantOrderEventPublisher;
 import pl.kopytka.restaurant.domain.entity.OrderApproval;
 import pl.kopytka.restaurant.domain.entity.Restaurant;
 import pl.kopytka.restaurant.domain.event.OrderApprovedEvent;
 import pl.kopytka.restaurant.domain.event.OrderRejectedEvent;
+import pl.kopytka.restaurant.domain.event.RestaurantOrderEvent;
 
 import java.util.List;
 import java.util.UUID;
@@ -24,7 +25,7 @@ public class RestaurantOrderApplicationService {
 
     private final RestaurantRepository restaurantRepository;
     private final OrderApprovalRepository orderApprovalRepository;
-    private final RestaurantOrderEventPublisher eventPublisher;
+    private final DomainEventPublisher<RestaurantOrderEvent> eventPublisher;
 
     @Transactional
     public void approveOrder(UUID restaurantId, UUID orderId, List<ProductDto> products) {

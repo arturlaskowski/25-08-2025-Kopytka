@@ -3,12 +3,13 @@ package pl.kopytka.restaurant.messaging;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionalEventListener;
 import pl.kopytka.avro.restaurant.RestaurantEventType;
 import pl.kopytka.avro.restaurant.RestaurantOrderApprovedAvroEvent;
 import pl.kopytka.avro.restaurant.RestaurantOrderEventAvroModel;
 import pl.kopytka.avro.restaurant.RestaurantOrderRejectedAvroEvent;
-import pl.kopytka.restaurant.domain.RestaurantOrderEventPublisher;
 import pl.kopytka.restaurant.domain.event.OrderApprovedEvent;
 import pl.kopytka.restaurant.domain.event.OrderRejectedEvent;
 import pl.kopytka.restaurant.domain.event.RestaurantOrderEvent;
@@ -20,13 +21,14 @@ import java.util.UUID;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-class KafkaRestaurantOrderEventPublisher implements RestaurantOrderEventPublisher {
+class KafkaRestaurantOrderEventPublisher {
 
     private final KafkaTemplate<String, RestaurantOrderEventAvroModel> kafkaTemplate;
     private final TopicsConfigData topicsConfigData;
 
-    @Override
-    public void publish(RestaurantOrderEvent event) {
+    @TransactionalEventListener
+    @Async
+    public void handleEventAfterCommitAndSendToKafka(RestaurantOrderEvent event) {
         try {
             switch (event) {
                 case OrderApprovedEvent orderApprovedEvent -> publishApprovalEvent(orderApprovedEvent);
