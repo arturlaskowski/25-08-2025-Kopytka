@@ -1,4 +1,3 @@
--- ShedLock table for distributed locking in tests
 CREATE TABLE IF NOT EXISTS shedlock
 (
     name       VARCHAR(64),

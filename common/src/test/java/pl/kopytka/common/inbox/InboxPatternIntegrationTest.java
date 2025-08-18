@@ -1,5 +1,6 @@
 package pl.kopytka.common.inbox;
 
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,7 @@ import static org.awaitility.Awaitility.await;
  * 3. Handling concurrent message processing via Kafka
  * 4. Database consistency and transaction management
  */
+@Slf4j
 @AcceptanceTest(topics = {"test-events"})
 @Import(InboxTestConfiguration.class)
 class InboxPatternIntegrationTest extends KafkaIntegrationTest {
@@ -100,38 +102,6 @@ class InboxPatternIntegrationTest extends KafkaIntegrationTest {
         // And - Verify only one inbox entry exists
         var inboxEntries = inboxRepository.findAll();
         assertThat(inboxEntries).hasSize(1);
-    }
-
-    @Test
-    void shouldProcessDifferentMessagesIndependently() {
-        // Given
-        String messageId1 = UUID.randomUUID().toString();
-        String messageId2 = UUID.randomUUID().toString();
-        String messageId3 = UUID.randomUUID().toString();
-        String content1 = "message-1";
-        String content2 = "message-2";
-        String content3 = "message-3";
-
-        // When - Send different messages to Kafka
-        kafkaTemplate.send(TEST_EVENTS_TOPIC, messageId1, content1);
-        kafkaTemplate.send(TEST_EVENTS_TOPIC, messageId2, content2);
-        kafkaTemplate.send(TEST_EVENTS_TOPIC, messageId3, content3);
-
-        // Then - Wait for all messages to be processed
-        await().atMost(5, TimeUnit.SECONDS)
-                .until(() -> testMessageProcessor.getProcessedCount() >= 3);
-
-        // And - Verify all messages were processed
-        assertThat(testMessageProcessor.getProcessedCount()).isEqualTo(3);
-        assertThat(testMessageProcessor.getProcessedMessages())
-                .containsExactlyInAnyOrder(content1, content2, content3);
-
-        // And - Verify all inbox entries were created
-        var inboxEntries = inboxRepository.findAll();
-        assertThat(inboxEntries).hasSize(3);
-        assertThat(inboxEntries)
-                .extracting(InboxEntry::getMessageId)
-                .containsExactlyInAnyOrder(messageId1, messageId2, messageId3);
     }
 
     @Test

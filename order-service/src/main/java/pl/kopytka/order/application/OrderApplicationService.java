@@ -39,30 +39,7 @@ public class OrderApplicationService {
             throw new InvalidOrderException("Customer does not exist: " + customerId.id());
         }
 
-        // Convert command to domain objects
-        OrderAddress deliveryAddress = new OrderAddress(
-                command.deliveryAddress().street(),
-                command.deliveryAddress().postCode(),
-                command.deliveryAddress().city(),
-                command.deliveryAddress().houseNo()
-        );
-
-        Set<OrderItem> basketItems = command.basketItems().stream()
-                .map(item -> new OrderItem(
-                        new ProductId(item.productId()),
-                        new Money(item.price()),
-                        new Quantity(item.quantity()),
-                        new Money(item.totalPrice())
-                ))
-                .collect(Collectors.toSet());
-
-        Order order = new Order(
-                customerId,
-                new RestaurantId(command.restaurantId()),
-                deliveryAddress,
-                new Money(command.price()),
-                basketItems
-        );
+        var order = mapToOrder(command, customerId);
         var saveOrder = orderRepository.save(order);
 
         orderEventPublisher.publish(new OrderCreatedEvent(order));
@@ -113,4 +90,33 @@ public class OrderApplicationService {
 
         return orderMapper.toProjection(order);
     }
+
+
+    private Order mapToOrder(CreateOrderCommand command, CustomerId customerId) {
+        // Convert command to domain objects
+        OrderAddress deliveryAddress = new OrderAddress(
+                command.deliveryAddress().street(),
+                command.deliveryAddress().postCode(),
+                command.deliveryAddress().city(),
+                command.deliveryAddress().houseNo()
+        );
+
+        Set<OrderItem> basketItems = command.basketItems().stream()
+                .map(item -> new OrderItem(
+                        new ProductId(item.productId()),
+                        new Money(item.price()),
+                        new Quantity(item.quantity()),
+                        new Money(item.totalPrice())
+                ))
+                .collect(Collectors.toSet());
+
+        return new Order(
+                customerId,
+                new RestaurantId(command.restaurantId()),
+                deliveryAddress,
+                new Money(command.price()),
+                basketItems
+        );
+    }
+
 }

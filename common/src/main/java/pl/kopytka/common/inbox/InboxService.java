@@ -18,7 +18,7 @@ public class InboxService {
         try {
             // Check if entry already exists
             if (inboxRepository.existsById(messageId)) {
-                log.debug("Message already processed: {}", messageId);
+                log.info("Message already processed: {}", messageId);
                 return;
             }
             
@@ -26,7 +26,7 @@ public class InboxService {
             processor.run();
             log.debug("Message processed: {}", messageId);
         } catch (DataIntegrityViolationException e) {
-            log.debug("Message already processed (constraint violation): {}", messageId);
+            log.info("Message already processed (constraint violation): {}", messageId);
         }
     }
 }
