@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import pl.kopytka.common.domain.event.DomainEventPublisher;
 import pl.kopytka.common.domain.valueobject.*;
 import pl.kopytka.order.application.dto.CreateOrderCommand;
 import pl.kopytka.order.application.dto.OrderQuery;
@@ -13,6 +12,7 @@ import pl.kopytka.order.application.exception.OrderNotFoundException;
 import pl.kopytka.order.application.replicaiton.CustomerViewService;
 import pl.kopytka.order.domain.Order;
 import pl.kopytka.order.domain.OrderAddress;
+import pl.kopytka.order.domain.OrderEventPublisher;
 import pl.kopytka.order.domain.OrderItem;
 import pl.kopytka.order.domain.event.*;
 
@@ -27,7 +27,7 @@ public class OrderApplicationService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
     private final CustomerViewService customerViewService;
-    private final DomainEventPublisher<OrderEvent> eventPublisher;
+    private final OrderEventPublisher eventPublisher;
 
     @Transactional
     public OrderId createOrder(CreateOrderCommand command) {

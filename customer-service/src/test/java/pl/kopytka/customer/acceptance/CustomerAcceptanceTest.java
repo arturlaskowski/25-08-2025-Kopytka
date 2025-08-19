@@ -1,36 +1,28 @@
 package pl.kopytka.customer.acceptance;
 
-import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import pl.kopytka.common.AcceptanceTest;
-import pl.kopytka.common.KafkaIntegrationTest;
+import pl.kopytka.common.OutboxIntegrationTest;
+import pl.kopytka.common.outbox.OutboxEntry;
+import pl.kopytka.common.outbox.OutboxStatus;
 import pl.kopytka.common.web.ErrorResponse;
 import pl.kopytka.customer.application.CustomerService;
 import pl.kopytka.customer.application.dto.CustomerDto;
 import pl.kopytka.customer.web.dto.CreateCustomerDto;
 
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@AcceptanceTest(topics = CustomerAcceptanceTest.CUSTOMER_EVENT_TOPIC)
-class CustomerAcceptanceTest extends KafkaIntegrationTest {
-
-    static final String CUSTOMER_EVENT_TOPIC = "customer-events";
+@AcceptanceTest
+class CustomerAcceptanceTest extends OutboxIntegrationTest {
 
     @Autowired
     private CustomerService customerService;
-
-    @BeforeEach
-    void setUp() {
-        setupKafkaConsumer(CUSTOMER_EVENT_TOPIC);
-    }
 
     @Test
     @DisplayName("""
@@ -89,7 +81,7 @@ class CustomerAcceptanceTest extends KafkaIntegrationTest {
         var createCustomerDto = new CreateCustomerDto("Marianek", "Paździoch", "mario@gemail.com");
 
         //when
-        ResponseEntity<UUID> postResponse = testRestTemplate.postForEntity(getBaseCustomersUrl(), createCustomerDto, UUID.class);
+        ResponseEntity<Void> postResponse = testRestTemplate.postForEntity(getBaseCustomersUrl(), createCustomerDto, Void.class);
 
         //then
         assertThat(postResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
@@ -132,13 +124,13 @@ class CustomerAcceptanceTest extends KafkaIntegrationTest {
     @DisplayName("""
             given request for creating Customer,
             when request is sent,
-            then Customer is added, HTTP 201 status received, and event is published to Kafka""")
-    void givenRequestForCreatingCustomer_whenRequestIsSent_thenCustomerAddedHttp201AndEventPublished() throws Exception {
+            then Customer is added, HTTP 201 status received, and event is saved to outbox""")
+    void givenRequestForCreatingCustomer_whenRequestIsSent_thenCustomerAddedHttp201AndEventSavedToOutbox() {
         //given
         var createCustomerDto = new CreateCustomerDto("Helena", "Kowalska", "helena@example.com");
 
         //when
-        ResponseEntity<UUID> postResponse = testRestTemplate.postForEntity(getBaseCustomersUrl(), createCustomerDto, UUID.class);
+        ResponseEntity<Void> postResponse = testRestTemplate.postForEntity(getBaseCustomersUrl(), createCustomerDto, Void.class);
 
         //then
         // Verify HTTP response
@@ -154,11 +146,26 @@ class CustomerAcceptanceTest extends KafkaIntegrationTest {
                 .hasFieldOrPropertyWithValue("lastName", createCustomerDto.lastName())
                 .hasFieldOrPropertyWithValue("email", createCustomerDto.email());
 
-        // Verify that event was sent to Kafka
-        ConsumerRecord<String, String> customerEvent = records.poll(5, TimeUnit.SECONDS);
-        assertThat(customerEvent).isNotNull();
-        assertThat(customerEvent.topic()).isEqualTo(CUSTOMER_EVENT_TOPIC);
-        assertThat(customerEvent.key()).isEqualTo((customerId));
+        // Verify that event was saved to outbox
+        var outboxEntries = findOutboxEntriesByMessageType("customerCreated");
+        assertThat(outboxEntries).hasSize(1);
+
+        OutboxEntry savedEntry = outboxEntries.getFirst();
+        assertThat(savedEntry)
+                .extracting(
+                        OutboxEntry::getMessageType,
+                        OutboxEntry::getMessageKey,
+                        OutboxEntry::getStatus
+                )
+                .containsExactly(
+                        "customerCreated",
+                        customerId,
+                        OutboxStatus.NEW
+                );
+
+        assertThat(savedEntry.getPayload()).isNotNull();
+        assertThat(savedEntry.getCreatedAt()).isNotNull();
+        assertThat(savedEntry.getProcessedAt()).isNull();
     }
 
     private String getBaseCustomersUrl() {

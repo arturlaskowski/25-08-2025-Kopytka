@@ -1,12 +1,14 @@
 package pl.kopytka.order.acceptance;
 
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import pl.kopytka.avro.payment.PaymentCommandAvroModel;
 import pl.kopytka.common.AcceptanceTest;
-import pl.kopytka.common.KafkaIntegrationTest;
+import pl.kopytka.common.OutboxIntegrationTest;
+import pl.kopytka.common.outbox.OutboxEntry;
+import pl.kopytka.common.outbox.OutboxStatus;
 import pl.kopytka.common.web.ErrorResponse;
 import pl.kopytka.order.application.dto.OrderQuery;
 import pl.kopytka.order.application.replicaiton.CustomerView;
@@ -21,18 +23,11 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-@AcceptanceTest(topics = OrderAcceptanceTest.PAYMENT_COMMAND_TOPIC)
-class OrderAcceptanceTest extends KafkaIntegrationTest {
-
-    static final String PAYMENT_COMMAND_TOPIC = "payment-commands";
+@AcceptanceTest
+class OrderAcceptanceTest extends OutboxIntegrationTest {
 
     @Autowired
     private CustomerViewService customerViewService;
-
-    @BeforeEach
-    void setUp() {
-        setupKafkaConsumer(PAYMENT_COMMAND_TOPIC);
-    }
 
     @Test
     @DisplayName("""
@@ -133,6 +128,77 @@ class OrderAcceptanceTest extends KafkaIntegrationTest {
                 .extracting("message")
                 .asString()
                 .contains("different than basket items total");
+    }
+
+    @Test
+    @DisplayName("""
+            given valid order creation request,
+            when request is sent,
+            then order is created, HTTP 201 status returned, and payment command is saved to outbox""")
+    void givenValidOrderCreationRequest_whenRequestIsSent_thenOrderCreatedHttp201AndPaymentCommandSavedToOutbox() {
+        // given
+        UUID customerId = UUID.randomUUID();
+        UUID restaurantId = UUID.randomUUID();
+        customerViewService.onCreateCustomer(new CustomerView(customerId));
+        UUID productId = UUID.randomUUID();
+
+        OrderAddressRequest address = new OrderAddressRequest(
+                "Main Street",
+                "12-345",
+                "New York",
+                "42A"
+        );
+        BigDecimal totalPrice = BigDecimal.valueOf(39.98);
+
+        List<BasketItemRequest> basketItems = List.of(
+                new BasketItemRequest(productId, BigDecimal.valueOf(19.99), 2, totalPrice));
+
+        CreateOrderRequest request = new CreateOrderRequest(
+                customerId,
+                restaurantId,
+                address,
+                totalPrice,
+                basketItems
+        );
+
+        // when
+        var postResponse = testRestTemplate.postForEntity(getBaseOrdersUrl(), request, Void.class);
+
+        // then
+        // Verify HTTP response
+        assertThat(postResponse.getStatusCode()).isEqualTo(HttpStatus.CREATED);
+        assertThat(postResponse.getHeaders().getLocation()).isNotNull();
+        var orderId = postResponse.getHeaders().getLocation().getPath().split("/")[3];
+
+        var getResponse = testRestTemplate.getForEntity(postResponse.getHeaders().getLocation(), OrderQuery.class);
+        assertThat(getResponse.getStatusCode()).isEqualTo(HttpStatus.OK);
+
+        OrderQuery order = getResponse.getBody();
+        assertThat(order).isNotNull();
+        assertThat(order.customerId()).isEqualTo(customerId);
+        assertThat(order.restaurantId()).isEqualTo(restaurantId);
+        assertThat(order.price()).isEqualByComparingTo(totalPrice);
+
+        // Verify that payment command was saved to outbox
+        var outboxEntries = findOutboxEntriesByMessageType(PaymentCommandAvroModel.class.getTypeName());
+        assertThat(outboxEntries).hasSize(1);
+        
+        OutboxEntry savedEntry = outboxEntries.getFirst();
+        assertThat(savedEntry)
+                .extracting(
+                        OutboxEntry::getMessageType,
+                        OutboxEntry::getMessageKey,
+                        OutboxEntry::getStatus
+                )
+                .containsExactly(
+                        PaymentCommandAvroModel.class.getTypeName(),
+                        orderId,
+                        OutboxStatus.NEW
+                );
+        
+        assertThat(savedEntry.getPayload()).isNotNull();
+        assertThat(savedEntry.getCreatedAt()).isNotNull();
+        assertThat(savedEntry.getProcessedAt()).isNull();
     }
 
     String getBaseOrdersUrl() {

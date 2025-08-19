@@ -24,3 +24,6 @@ kafka-config:
   schema-registry-url-key: schema.registry.url
   schema-registry-url: mock://test
 
+kopytka:
+  scheduling:
+    enabled: false
